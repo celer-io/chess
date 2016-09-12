@@ -1,0 +1,50 @@
+/*common*/
+.clearfix {
+	clear: both;
+}
+
+/*board*/
+#board {
+}
+
+
+
+#board .square {
+	float:left;
+	width: 50px;
+	height: 50px;
+}
+
+#board .square:nth-of-type(odd) {
+	background-color: lightgrey;
+}
+
+#board .square:nth-of-type(even) {
+	background-color: darkgrey;
+}
+
+#board .square .piece {
+	width: 50px;
+	height: 50px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 2.5em;
+}
+
+#board .square .piece[draggable="true"] {
+	cursor: pointer;
+}
+
+#board .square .piece[data-color="white"][data-type="king"]::before 	{ content:"\2654"}
+#board .square .piece[data-color="white"][data-type="queen"]::before 	{ content:"\2655"}
+#board .square .piece[data-color="white"][data-type="rook"]::before 	{ content:"\2656"}
+#board .square .piece[data-color="white"][data-type="bishop"]::before { content:"\2657"}
+#board .square .piece[data-color="white"][data-type="knight"]::before { content:"\2658"}
+#board .square .piece[data-color="white"][data-type="pawn"]::before 	{ content:"\2659"}
+#board .square .piece[data-color="black"][data-type="king"]::before 	{ content:"\265A"}
+#board .square .piece[data-color="black"][data-type="queen"]::before 	{ content:"\265B"}
+#board .square .piece[data-color="black"][data-type="rook"]::before 	{ content:"\265C"}
+#board .square .piece[data-color="black"][data-type="bishop"]::before { content:"\265D"}
+#board .square .piece[data-color="black"][data-type="knight"]::before { content:"\265E"}
+#board .square .piece[data-color="black"][data-type="pawn"]::before 	{ content:"\265F"}
