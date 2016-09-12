@@ -85,20 +85,10 @@ class Board {
   setPiecePosition(oldPiece, newPosition) {
     let newPiece = Object.assign({}, oldPiece)
     if (newPosition) {
-      let oldPieceData = this.getPieceEl(oldPiece.position).dataset
-
-      delete oldPieceData.type
-      delete oldPieceData.color
-      delete oldPieceData.id
-
+      this.getPieceEl(oldPiece.position).remove()
       newPiece.position = newPosition
     }
-
-    let newPieceData = this.getPieceEl(newPiece.position).dataset
-
-    newPieceData.type = newPiece.type
-    newPieceData.color = newPiece.color
-    newPieceData.id = newPiece.id
+    this.addPieceEl(newPiece)
 
     return newPiece
   }
@@ -108,6 +98,17 @@ class Board {
   setPieceDraggable(piece, dragValue = true) {
     let pieceEl = this.getPieceEl(piece.position)
     pieceEl.draggable = dragValue
+    //TODO: add event listeners
+  }
+  addPieceEl(piece){
+    let pieceEl = document.createElement("div")
+    pieceEl.setAttribute( 'class', 'piece' )
+    pieceEl.dataset.type  = piece.type
+    pieceEl.dataset.color = piece.color
+    pieceEl.dataset.id    = piece.id
+
+    document.getElementById(piece.position)
+      .appendChild(pieceEl)
   }
   getPieceEl(position){
     return document
@@ -115,10 +116,12 @@ class Board {
     .getElementsByClassName("piece")[0]
   }
   setupDragHandlers(){
-    let squares = document.getElementsByClassName("square")
-    for (let i = 0; i < squares.length; i++) {
-      squares.item(i).addEventListener("dragstart", this.handleDragStart, false);
-      squares.item(i).addEventListener("dragstart", this.handleDragStart, false);
-    }
+    [].forEach.call(document.getElementsByClassName("square"), (squareEl) => {
+      squareEl.addEventListener("dragover", this.handleDragOver, false)
+      squareEl.addEventListener("drop", this.handleDragOver, false)
+    })
+  }
+  handleDragOver(ev){
+    console.log(ev)
   }
 }
