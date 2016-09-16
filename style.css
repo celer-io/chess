@@ -23,6 +23,10 @@
 	background-color: darkgrey;
 }
 
+#board .square.move-source {
+	background-color: blue;
+}
+
 #board .square .piece {
 	width: 50px;
 	height: 50px;
@@ -30,10 +34,11 @@
 	justify-content: center;
 	align-items: center;
 	font-size: 2.5em;
+	cursor: default;
 }
 
 #board .square .piece[draggable="true"] {
-	cursor: pointer;
+	cursor: grab;
 }
 
 #board .square .piece[data-color="white"][data-type="king"]::before 	{ content:"\2654"}

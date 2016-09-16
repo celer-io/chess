@@ -52,28 +52,6 @@ function getBlackArmy(){
   }
 }
 
-// //TODO: handle drag and drop...
-// function drag_handler(ev) {
-//   ev.dataTransfer.setData('text/plain', 'dummy')
-//   console.log("Drag")
-//   console.log();
-// }
-//
-// function dragstart_handler(ev) {
-//   ev.dataTransfer.setData('text/plain', 'dummy')
-//   console.log("dragStart")
-// }
-//
-// function drop_handler(ev) {
-//   ev.dataTransfer.setData('text/plain', 'dummy')
-//   console.log("Drop")
-// }
-//
-// function dragover_handler(ev) {
-//   ev.dataTransfer.setData('text/plain', 'dummy')
-//   console.log("dragOver")
-// }
-
 class Board {
   constructor(blackArmy, whiteArmy) {
     [blackArmy, whiteArmy].forEach((army) => {
@@ -97,12 +75,17 @@ class Board {
   }
   setPieceDraggable(piece, dragValue = true) {
     let pieceEl = this.getPieceEl(piece.position)
-    pieceEl.draggable = dragValue
-    //TODO: add event listeners
+    pieceEl.setAttribute('draggable', dragValue)
+    pieceEl.addEventListener("dragstart", this.pieceDragStart, false)
+    pieceEl.addEventListener("dragend", this.pieceDragEnd, false)
   }
   addPieceEl(piece){
     let pieceEl = document.createElement("div")
-    pieceEl.setAttribute( 'class', 'piece' )
+    pieceEl.classList.add("piece")
+    pieceEl.classList.add(piece.color + "-" + piece.type)
+    pieceEl.id = piece.color + piece.type + piece.id
+
+    //TODO: get rid of dataset in css
     pieceEl.dataset.type  = piece.type
     pieceEl.dataset.color = piece.color
     pieceEl.dataset.id    = piece.id
@@ -117,11 +100,52 @@ class Board {
   }
   setupDragHandlers(){
     [].forEach.call(document.getElementsByClassName("square"), (squareEl) => {
-      squareEl.addEventListener("dragover", this.handleDragOver, false)
-      squareEl.addEventListener("drop", this.handleDragOver, false)
+      // squareEl.addEventListener("dragover", this.squareDragOver, false)
+      squareEl.addEventListener("drop", this.squareDrop, false)
     })
   }
-  handleDragOver(ev){
-    console.log(ev)
+  squareDragOver(ev){
+    // TODO : hanbdle dragenter...
+    // function dragenter_handler(ev) {
+    //   console.log("dragEnter");
+    //   // Change the source element's background color for enter events
+    //   ev.currentTarget.style.background = "yellow";
+    // }
+    //
+    // function dragleave_handler(ev) {
+    //   console.log("dragLeave");
+    //   // Change the source element's border back to white
+    //   ev.currentTarget.style.background = "white";
+    // }
+
+    // Change the target element's border to signify a drag over ev
+    // has occurred
+    ev.currentTarget.classList.add("move-target")
+    ev.prevDefault();
+  }
+  squareDrop(ev){
+    console.log("Drop");
+    console.log("ev.target", ev.target);
+    console.log("ev.currentTarget", ev.currentTarget);
+    // ev.prevDefault();
+    var id = ev.dataTransfer.getData("text")
+    console.log("id", id);
+    ev.target.appendChild(document.getElementById(id))
+  }
+  pieceDragEnd(ev){
+    // console.log("dragEnd");
+    // console.log("ev.target", ev.target);
+    // console.log("ev.currentTarget", ev.currentTarget);
+    //
+    // ev.dataTransfer.clearData();
+  }
+  pieceDragStart(ev){
+    ev.dataTransfer.setData("text", ev.currentTarget.id)
+    // console.log("dragStart");
+    // console.log("ev.target", ev.target);
+    // console.log("ev.currentTarget", ev.currentTarget);
+    ev.currentTarget.parentNode.classList.add("move-source")
+
+    ev.effectAllowed = "move";
   }
 }
