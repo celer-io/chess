@@ -7,8 +7,6 @@
 #board {
 }
 
-
-
 #board .square {
 	float:left;
 	width: 50px;
@@ -27,6 +25,14 @@
 	background-color: blue;
 }
 
+#board .square.move-target {
+	background-color: blue;
+}
+
+#board .square.move-available {
+	background-color: green;
+}
+
 #board .square .piece {
 	width: 50px;
 	height: 50px;
@@ -41,15 +47,15 @@
 	cursor: grab;
 }
 
-#board .square .piece[data-color="white"][data-type="king"]::before 	{ content:"\2654"}
-#board .square .piece[data-color="white"][data-type="queen"]::before 	{ content:"\2655"}
-#board .square .piece[data-color="white"][data-type="rook"]::before 	{ content:"\2656"}
-#board .square .piece[data-color="white"][data-type="bishop"]::before { content:"\2657"}
-#board .square .piece[data-color="white"][data-type="knight"]::before { content:"\2658"}
-#board .square .piece[data-color="white"][data-type="pawn"]::before 	{ content:"\2659"}
-#board .square .piece[data-color="black"][data-type="king"]::before 	{ content:"\265A"}
-#board .square .piece[data-color="black"][data-type="queen"]::before 	{ content:"\265B"}
-#board .square .piece[data-color="black"][data-type="rook"]::before 	{ content:"\265C"}
-#board .square .piece[data-color="black"][data-type="bishop"]::before { content:"\265D"}
-#board .square .piece[data-color="black"][data-type="knight"]::before { content:"\265E"}
-#board .square .piece[data-color="black"][data-type="pawn"]::before 	{ content:"\265F"}
+#board .square .piece.white-king::before 	{ content:"\2654"}
+#board .square .piece.white-queen::before 	{ content:"\2655"}
+#board .square .piece.white-rook::before 	{ content:"\2656"}
+#board .square .piece.white-bishop::before { content:"\2657"}
+#board .square .piece.white-knight::before { content:"\2658"}
+#board .square .piece.white-pawn::before 	{ content:"\2659"}
+#board .square .piece.black-king::before 	{ content:"\265A"}
+#board .square .piece.black-queen::before 	{ content:"\265B"}
+#board .square .piece.black-rook::before 	{ content:"\265C"}
+#board .square .piece.black-bishop::before { content:"\265D"}
+#board .square .piece.black-knight::before { content:"\265E"}
+#board .square .piece.black-pawn::before 	{ content:"\265F"}

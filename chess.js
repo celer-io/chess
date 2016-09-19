@@ -77,7 +77,6 @@ class Board {
     let pieceEl = this.getPieceEl(piece.position)
     pieceEl.setAttribute('draggable', dragValue)
     pieceEl.addEventListener("dragstart", this.pieceDragStart, false)
-    pieceEl.addEventListener("dragend", this.pieceDragEnd, false)
   }
   addPieceEl(piece){
     let pieceEl = document.createElement("div")
@@ -85,10 +84,8 @@ class Board {
     pieceEl.classList.add(piece.color + "-" + piece.type)
     pieceEl.id = piece.color + piece.type + piece.id
 
-    //TODO: get rid of dataset in css
-    pieceEl.dataset.type  = piece.type
-    pieceEl.dataset.color = piece.color
-    pieceEl.dataset.id    = piece.id
+    pieceEl.addEventListener("dragenter", this.pieceDragEnter, false)
+    pieceEl.addEventListener("dragleave", this.pieceDragLeave, false)
 
     document.getElementById(piece.position)
       .appendChild(pieceEl)
@@ -100,52 +97,78 @@ class Board {
   }
   setupDragHandlers(){
     [].forEach.call(document.getElementsByClassName("square"), (squareEl) => {
-      // squareEl.addEventListener("dragover", this.squareDragOver, false)
+      squareEl.addEventListener("dragover", this.squareDragOver, false)
+      squareEl.addEventListener("dragenter", this.squareDragEnter, false)
+      squareEl.addEventListener("dragleave", this.squareDragLeave, false)
       squareEl.addEventListener("drop", this.squareDrop, false)
     })
   }
+  squareDragEnter(ev){
+    ev.target.classList.add("move-target")
+  }
   squareDragOver(ev){
-    // TODO : hanbdle dragenter...
-    // function dragenter_handler(ev) {
-    //   console.log("dragEnter");
-    //   // Change the source element's background color for enter events
-    //   ev.currentTarget.style.background = "yellow";
-    // }
-    //
-    // function dragleave_handler(ev) {
-    //   console.log("dragLeave");
-    //   // Change the source element's border back to white
-    //   ev.currentTarget.style.background = "white";
-    // }
-
-    // Change the target element's border to signify a drag over ev
-    // has occurred
-    ev.currentTarget.classList.add("move-target")
-    ev.prevDefault();
+    ev.preventDefault()
+  }
+  squareDragLeave(ev){
+    ev.target.classList.remove("move-target")
+  }
+  pieceDragEnter(ev){
+    ev.target.parentNode.classList.add("move-target")
+  }
+  pieceDragLeave(ev){
+    ev.target.parentNode.classList.remove("move-target")
   }
   squareDrop(ev){
-    console.log("Drop");
-    console.log("ev.target", ev.target);
-    console.log("ev.currentTarget", ev.currentTarget);
-    // ev.prevDefault();
-    var id = ev.dataTransfer.getData("text")
-    console.log("id", id);
-    ev.target.appendChild(document.getElementById(id))
-  }
-  pieceDragEnd(ev){
-    // console.log("dragEnd");
-    // console.log("ev.target", ev.target);
-    // console.log("ev.currentTarget", ev.currentTarget);
-    //
-    // ev.dataTransfer.clearData();
+    ev.preventDefault()
+    const data = JSON.parse(ev.dataTransfer.getData("text/plain"))
+    let squareEl = ev.target
+    let pieceEl
+    if (squareEl.classList.contains('piece')){
+      squareEl = ev.target.parentNode
+      // ev.target.remove()
+      pieceEl = ev.target
+    }
+    console.log('data.availableTargets',data.availableTargets);
+    console.log('squareEl.id',squareEl.id);
+
+    if(data.availableTargets.indexOf(squareEl.id) === -1) {
+      console.log('not availableTargets');
+      return
+    }
+
+    const newPieceEl = document.getElementById(data.id)
+    if (pieceEl) pieceEl.remove()
+    squareEl.appendChild(newPieceEl)
   }
   pieceDragStart(ev){
-    ev.dataTransfer.setData("text", ev.currentTarget.id)
-    // console.log("dragStart");
-    // console.log("ev.target", ev.target);
-    // console.log("ev.currentTarget", ev.currentTarget);
+    let data = {
+      id: ev.currentTarget.id
+    }
+    data.availableTargets = [
+      "a6",
+      "b6",
+      "c6",
+      "d6",
+      "e6",
+      "f6",
+      "g6",
+      "h6"
+    ]
+    ev.dataTransfer.setData("text/plain", JSON.stringify(data))
+
+    ;[].forEach.call(document.getElementsByClassName("move-target"), (squareEl) => {
+      console.log('heyyy');
+      squareEl.classList.remove("move-target")
+    })
+
+    ;[].forEach.call(document.getElementsByClassName("move-source"), (squareEl) => {
+      squareEl.classList.remove("move-source")
+    })
+
     ev.currentTarget.parentNode.classList.add("move-source")
 
-    ev.effectAllowed = "move";
+    // TODO: for nice drag and drop in chrome
+    // event.dataTransfer.setDragImage(image, xOffset, yOffset);
+
   }
 }
