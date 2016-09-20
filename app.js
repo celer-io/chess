@@ -1,4 +1,7 @@
-// const R = require('ramda')
+'use strict'
+const Board = require('./board.js')
+const Rules = require('./rules.js')
+
 function main () {
   const rules = new Rules()
   const board = new Board()
@@ -164,62 +167,5 @@ function getBlackArmy () {
     pawn6: {type: 'pawn', id: '6', color: 'black', position: 'f7'},
     pawn7: {type: 'pawn', id: '7', color: 'black', position: 'g7'},
     pawn8: {type: 'pawn', id: '8', color: 'black', position: 'h7'}
-  }
-}
-
-class Rules {
-  getMovesFor (gameMatrix, position) {
-    console.log('gameMatrix', gameMatrix)
-    console.log('position', position)
-    return [
-      'a3',
-      'b3',
-      'c3',
-      'd3',
-      'e3',
-      'f3',
-      'g3',
-      'h3'
-    ]
-  }
-}
-
-class Board {
-  movePiece (oldPosition, newPosition) {
-    return this.drawPiece(newPosition, this.getPiece(oldPosition))
-  }
-  setPieceDraggable (position, value = true) {
-    this.getPiece(position).setAttribute('draggable', value)
-    return this.getPiece(position)
-  }
-  removePiece (position) {
-    return this.getPiece(position).remove()
-  }
-  createPiece (color, type, id) {
-    let piece = document.createElement('div')
-    piece.classList.add('piece')
-    piece.classList.add(color + '-' + type)
-    piece.id = color + type + id
-    return piece
-  }
-  drawPiece (position, piece) {
-    return document.getElementById(position).appendChild(piece)
-  }
-  getPiece (position) {
-    return document.getElementById(position).firstChild
-  }
-  getSquares () {
-    return Array.from(document.getElementsByClassName('square'))
-  }
-  clearLastMove () {
-    const moveClasses = ['move-target', 'move-source']
-
-    moveClasses.forEach((moveClass) => {
-      Array.from(document.getElementsByClassName(moveClass))
-        .forEach((squareEl) => {
-          console.log('heyyy')
-          squareEl.classList.remove(moveClass)
-        })
-    })
   }
 }
