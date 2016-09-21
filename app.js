@@ -1,8 +1,9 @@
 'use strict'
 const Board = require('./board.js')
 const Rules = require('./rules.js')
+const M = require('./matrix-utils.js')
 
-function main () {
+document.addEventListener('DOMContentLoaded', () => {
   const rules = new Rules()
   const board = new Board()
   const handlers = {
@@ -70,7 +71,6 @@ function main () {
     })
   })
 
-
   whiteArmy.map((piece) => {
     return piece.position
   }).map((position) => {
@@ -92,26 +92,9 @@ function main () {
     var wesd = m.getPieceAtPosition('truc', 'a4')
     console.log(wesd)
   }, 2000)
-}
+})
 
-class M {
-  getPieceAtPosition (matrix, position, transformation = { x: 0, y: 0 }) {
-    const letterToX = { h: 0, g: 1, f: 2, e: 3, d: 4, c: 5, b: 6, a: 7 }
-    position = {
-      x: letterToX[position.split('')[0]],
-      y: position.split('')[1] - 1
-    }
-    return matrix[position.x + transformation.x][position.y + transformation.y]
-  }
-  setPieceAt (matrix, position, piece) {
-    const letterToX = { h: 0, g: 1, f: 2, e: 3, d: 4, c: 5, b: 6, a: 7 }
-    position = {
-      x: letterToX[position.split('')[0]],
-      y: position.split('')[1] - 1
-    }
-    matrix[position.x][position.y] = piece
-  }
-}
+
 
 function initGame () {
   let matrix = [
@@ -124,7 +107,7 @@ function initGame () {
     ['b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8'],
     ['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8']
   ]
-  //TODO : build matrix from armies
+  // TODO : build matrix from armies
   return matrix
 }
 

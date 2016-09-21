@@ -4,16 +4,9 @@
   "description": "An html/js implementation of chess2",
   "main": "app.js",
   "dependencies": {
-    "browserify": "^13.1.0",
-    "eslint": "^3.5.0",
-    "eslint-config-standard": "^6.0.1",
-    "eslint-plugin-promise": "^2.0.1",
-    "eslint-plugin-standard": "^2.0.0",
-    "node-sass": "^3.10.0",
     "ramda": "^0.22.1"
   },
   "devDependencies": {
-    "node-sass": "^3.10.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -26,7 +19,7 @@
     "chess"
   ],
   "author": "crucialHawg",
-  "license": "ISC",
+  "license": "GPLv3",
   "bugs": {
     "url": "https://github.com/crucialHawg/chess/issues"
   },

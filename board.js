@@ -40,4 +40,4 @@ class Board {
   }
 }
 
-module.exports.Board
+module.exports = Board
