@@ -1,6 +1,7 @@
 'use strict'
 const Board = require('./board.js')
 const Rules = require('./rules.js')
+const _ = require('ramda')
 const M = require('./matrix-utils.js')
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -59,10 +60,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   }
 
-  let whiteArmy = getWhiteArmy()
-  let blackArmy = getBlackArmy()
+  // let whiteArmy = getWhiteArmy()
+  // let blackArmy = getBlackArmy()
 
   let gameMatrix = initGame()
+  console.log('gameMatrix', gameMatrix);
 
   //  temporary, we have to model the board as a matrix
   ;[blackArmy, whiteArmy].forEach((army) => {
@@ -98,21 +100,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function initGame () {
   let matrix = [
-    ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8'],
-    ['g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7', 'g8'],
-    ['f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8'],
-    ['e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8'],
-    ['d1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8'],
-    ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8'],
-    ['b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8'],
-    ['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8']
+    new Array(8),
+    new Array(8),
+    new Array(8),
+    new Array(8),
+    new Array(8),
+    new Array(8),
+    new Array(8),
+    new Array(8)
   ]
-  // TODO : build matrix from armies
-  return matrix
-}
 
-function getWhiteArmy () {
-  return [
+  let initialSet = [
     {type: 'king', id: '', color: 'white', position: 'e1'},
     {type: 'queen', id: '', color: 'white', position: 'd1'},
     {type: 'rook', id: '1', color: 'white', position: 'a1'},
@@ -128,27 +126,27 @@ function getWhiteArmy () {
     {type: 'pawn', id: '5', color: 'white', position: 'e2'},
     {type: 'pawn', id: '6', color: 'white', position: 'f2'},
     {type: 'pawn', id: '7', color: 'white', position: 'g2'},
-    {type: 'pawn', id: '8', color: 'white', position: 'h2'}
-  ]
-}
+    {type: 'pawn', id: '8', color: 'white', position: 'h2'},
 
-function getBlackArmy () {
-  return {
-    king: {type: 'king', id: '', color: 'black', position: 'e8'},
-    queen: {type: 'queen', id: '', color: 'black', position: 'd8'},
-    rook1: {type: 'rook', id: '1', color: 'black', position: 'a8'},
-    rook2: {type: 'rook', id: '2', color: 'black', position: 'h8'},
-    bishop1: {type: 'bishop', id: '1', color: 'black', position: 'c8'},
-    bishop2: {type: 'bishop', id: '2', color: 'black', position: 'f8'},
-    knight1: {type: 'knight', id: '1', color: 'black', position: 'b8'},
-    knight2: {type: 'knight', id: '2', color: 'black', position: 'g8'},
-    pawn1: {type: 'pawn', id: '1', color: 'black', position: 'a7'},
-    pawn2: {type: 'pawn', id: '2', color: 'black', position: 'b7'},
-    pawn3: {type: 'pawn', id: '3', color: 'black', position: 'c7'},
-    pawn4: {type: 'pawn', id: '4', color: 'black', position: 'd7'},
-    pawn5: {type: 'pawn', id: '5', color: 'black', position: 'e7'},
-    pawn6: {type: 'pawn', id: '6', color: 'black', position: 'f7'},
-    pawn7: {type: 'pawn', id: '7', color: 'black', position: 'g7'},
-    pawn8: {type: 'pawn', id: '8', color: 'black', position: 'h7'}
-  }
+    {type: 'king', id: '', color: 'black', position: 'e8'},
+    {type: 'queen', id: '', color: 'black', position: 'd8'},
+    {type: 'rook', id: '1', color: 'black', position: 'a8'},
+    {type: 'rook', id: '2', color: 'black', position: 'h8'},
+    {type: 'bishop', id: '1', color: 'black', position: 'c8'},
+    {type: 'bishop', id: '2', color: 'black', position: 'f8'},
+    {type: 'knight', id: '1', color: 'black', position: 'b8'},
+    {type: 'knight', id: '2', color: 'black', position: 'g8'},
+    {type: 'pawn', id: '1', color: 'black', position: 'a7'},
+    {type: 'pawn', id: '2', color: 'black', position: 'b7'},
+    {type: 'pawn', id: '3', color: 'black', position: 'c7'},
+    {type: 'pawn', id: '4', color: 'black', position: 'd7'},
+    {type: 'pawn', id: '5', color: 'black', position: 'e7'},
+    {type: 'pawn', id: '6', color: 'black', position: 'f7'},
+    {type: 'pawn', id: '7', color: 'black', position: 'g7'},
+    {type: 'pawn', id: '8', color: 'black', position: 'h7'}
+  ]
+  initialSet.forEach(piece => {
+    matrix = M.setPieceAt(matrix, piece.position, piece)
+  })
+  return matrix
 }
