@@ -1,17 +1,17 @@
 'use strict'
 
-function movePiece (oldPosition, newPosition) {
-  return drawPiece(newPosition, getPiece(oldPosition))
-}
+// function movePiece (oldPosition, newPosition) {
+//   return drawPiece(newPosition, getPiece(oldPosition))
+// }
 
 function setDraggableAt (position) {
   getPiece(position).setAttribute('draggable', true)
   return getPiece(position)
 }
 
-function removePiece (position) {
-  return getPiece(position).remove()
-}
+// function removePiece (position) {
+//   return getPiece(position).remove()
+// }
 
 function createPiece (color, type, id) {
   let piece = document.createElement('div')

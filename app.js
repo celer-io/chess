@@ -28,19 +28,98 @@ const whitePawnMoves = [
   {y: 1, x: -1}
 ]
 
+const blackPawnMoves = [
+  {y: -1, x: 0},
+  {y: -1, x: 1},
+  {y: -1, x: -1}
+]
+
+const knightMoves = [
+  {y: 2, x: 1},
+  {y: 2, x: -1},
+  {y: 1, x: 2},
+  {y: -1, x: 2},
+  {y: -2, x: 1},
+  {y: -2, x: -1},
+  {y: 1, x: -2},
+  {y: -1, x: -2}
+]
+
+const rookMoves = _.flatten([
+  _.times((x) => ({y: 0, x: 1+x}), 7),
+  _.times((x) => ({y: 0, x: -1-x}), 7),
+  _.times((y) => ({y: 1+y, x: 0}), 7),
+  _.times((y) => ({y: -1-y, x: 0}), 7)
+])
+
+const bishopMoves = _.flatten([
+  _.times((n) => ({y: 1+n, x: 1+n}), 7),
+  _.times((n) => ({y: -1-n, x: -1-n}), 7),
+  _.times((n) => ({y: 1+n, x: -1-n}), 7),
+  _.times((n) => ({y: -1-n, x: 1+n}), 7)
+])
+
+const queenMoves = _.flatten([rookMoves, bishopMoves])
+
+const whiteArmyMoves = {
+  pawn: whitePawnMoves,
+  knight: knightMoves,
+  rook: rookMoves,
+  bishop: bishopMoves,
+  queen: queenMoves
+}
+
+// const rookMoves = _.forEach(_.times(_._, 7), [
+//   (x) => ({y: 0, x: 1+x}),
+//   (x) => ({y: 0, x: -1-x}),
+//   (y) => ({y: 1+y, x: 0}),
+//   (y) => ({y: -1-y, x: 0})
+// ])
+
 const possibleMoves = (matrix, position) => {
-  console.log('position', position);
-  console.log('matrix', matrix);
   const piece = M.getPieceAtPosition(matrix, position)
 
-  if (piece.type === 'pawn' && piece.color === 'white') {
-    return whitePawnMoves.map(t => {
+  if (piece.color === 'white') {
+    return whiteArmyMoves[piece.type].map(t => {
       return M.getTransformed(position, t)
     })
   }
 
   return []
 }
+
+
+const movePiece = (matrix, origin, destination) => {
+  return new Promise((resolve, reject) => {
+    const moves = possibleMoves(matrix, origin)
+
+    // if (_.not(_.any(_.equals(destination), moves))) reject('noop')
+
+    console.log("moves", moves);
+
+    let res = {
+      updates: [],
+      deletes: []
+    };
+
+    const pieceOnTarget = M.getPieceAtPosition(matrix, destination)
+
+    console.log('pieceOnTarget', pieceOnTarget);
+    if (pieceOnTarget) res.deletes.push(getSlug(pieceOnTarget))
+
+    console.log('slug', getSlug(M.getPieceAtPosition(matrix, origin)));
+    res.updates.push({
+      position: destination,
+      slug: getSlug(M.getPieceAtPosition(matrix, origin))
+    })
+
+    console.log('res', res);
+
+    resolve(res)
+  })
+}
+
+const getSlug = piece => piece.color + piece.type + piece.id
 
 document.addEventListener('DOMContentLoaded', () => {
   let gameMatrix = initGame()
@@ -50,48 +129,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const onSquareDrop = ev => {
     ev.preventDefault()
-    const data = getData(ev)
-    let squareEl = ev.target
-    let pieceEl
-    if (squareEl.classList.contains('piece')) {
-      squareEl = ev.target.parentNode
-      pieceEl = ev.target
-    }
+    const origin = getData(ev)
+    const destination = ev.target.classList.contains('piece') ? ev.target.parentNode : ev.target
+    // let pieceEl
+    // if (squareEl.classList.contains('piece')) {
+    //   squareEl = ev.target.parentNode
+    //   // pieceEl = ev.target
+    // }
 
-    if (data.possibleMoves.indexOf(squareEl.id) === -1) { //THis is ugly
-      console.log('not availableTargets')
-      board.clearLastMove()
-      return // this is also ugly
-    }
+    movePiece(gameMatrix, origin, destination).then((res) => {
+      _.forEach(updatePiece, res.updates)
+      _.forEach(deletePiece, res.deletes)
+    }, (err) => {
+      console.log('err', err);
+      if (err) throw err
+      // board.clearLastMove()
+    })
 
-    // TODO : handle move and remove piece from from rules within matrix and not in the event
+    // // TODO : handle move and remove piece from from rules within matrix and not in the event
+    // if (data.possibleMoves.indexOf(squareEl.id) === -1) { //THis is ugly
+    //   return // this is also ugly
+    // }
+
+
+
+
     // promise ??? yup yup
-    const newPieceEl = document.getElementById(data.pieceSlug)
-    if (pieceEl) pieceEl.remove()
-    squareEl.appendChild(newPieceEl)
+    // if (pieceEl) pieceEl.remove()
+
     // END
   }
 
   const onPieceDragStart = ev => {
-    let data = {
-      originPosition: ev.currentTarget.parentNode.id,
-      pieceSlug: ev.currentTarget.id,
-    }
+    // let data = {
+    //   originPosition: ev.currentTarget.parentNode.id,
+    //   pieceSlug: ev.currentTarget.id,
+    // }
     board.clearLastMove()
-    data.possibleMoves = possibleMoves(gameMatrix, data.originPosition)
-    console.log(data.possibleMoves);
-    setData(ev, data)
+    // data.possibleMoves = possibleMoves(gameMatrix, data.originPosition)
+    // console.log(data.possibleMoves);
+    setData(ev, ev.currentTarget.parentNode.id)
     setMoveSource(ev.currentTarget.parentNode)
     // TODO: for nice drag and drop in chrome
     // event.dataTransfer.setDragImage(image, xOffset, yOffset)
   }
 
-  const drawPiece = piece => board.drawPiece(piece.position, board.createPiece(piece.color, piece.type, piece.id))//To refactor
+  const deletePiece = slug => document.getElementById(slug).remove()
+
+  const updatePiece = update => document.getElementById(update.position).appendChild(document.getElementById(update.slug))
+
+  const createPiece = piece => board.drawPiece(piece.position, board.createPiece(piece.color, piece.type, piece.id))//To refactor
 
   const notNil = _.compose(_.not, _.isNil)
 
   //matrix
-  const draw = _.compose(_.forEach(drawPiece),_.filter(notNil),_.flatten)
+  const draw = _.compose(_.forEach(createPiece),_.filter(notNil),_.flatten)
 
   draw(gameMatrix)
 
