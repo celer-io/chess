@@ -90,33 +90,25 @@ const possibleMoves = (matrix, position) => {
 
 
 const movePiece = (matrix, origin, destination) => {
-  return new Promise((resolve, reject) => {
-    const moves = possibleMoves(matrix, origin)
+  const moves = possibleMoves(matrix, origin)
 
-    // if (_.not(_.any(_.equals(destination), moves))) reject('noop')
+  // if (_.not(_.any(_.equals(destination), moves))) throw 'noop'
 
-    console.log("moves", moves);
+  let res = {
+    updates: [],
+    deletes: []
+  };
 
-    let res = {
-      updates: [],
-      deletes: []
-    };
+  const pieceOnTarget = M.getPieceAtPosition(matrix, destination)
 
-    const pieceOnTarget = M.getPieceAtPosition(matrix, destination)
+  if (pieceOnTarget) res.deletes.push(getSlug(pieceOnTarget))
 
-    console.log('pieceOnTarget', pieceOnTarget);
-    if (pieceOnTarget) res.deletes.push(getSlug(pieceOnTarget))
-
-    console.log('slug', getSlug(M.getPieceAtPosition(matrix, origin)));
-    res.updates.push({
-      position: destination,
-      slug: getSlug(M.getPieceAtPosition(matrix, origin))
-    })
-
-    console.log('res', res);
-
-    resolve(res)
+  res.updates.push({
+    position: destination,
+    slug: getSlug(M.getPieceAtPosition(matrix, origin))
   })
+
+  return res
 }
 
 const getSlug = piece => piece.color + piece.type + piece.id
@@ -127,37 +119,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const getData = ev => JSON.parse(ev.dataTransfer.getData('text/plain'))
   const setData = (ev, data) => ev.dataTransfer.setData('text/plain', JSON.stringify(data))
 
+  const handleMove = move => {
+    _.forEach(updatePiece, move.updates)
+    _.forEach(deletePiece, move.deletes)
+  }
+
   const onSquareDrop = ev => {
     ev.preventDefault()
     const origin = getData(ev)
     const destination = ev.target.classList.contains('piece') ? ev.target.parentNode : ev.target
-    // let pieceEl
-    // if (squareEl.classList.contains('piece')) {
-    //   squareEl = ev.target.parentNode
-    //   // pieceEl = ev.target
-    // }
-
-    movePiece(gameMatrix, origin, destination).then((res) => {
-      _.forEach(updatePiece, res.updates)
-      _.forEach(deletePiece, res.deletes)
-    }, (err) => {
-      console.log('err', err);
-      if (err) throw err
-      // board.clearLastMove()
-    })
-
-    // // TODO : handle move and remove piece from from rules within matrix and not in the event
-    // if (data.possibleMoves.indexOf(squareEl.id) === -1) { //THis is ugly
-    //   return // this is also ugly
-    // }
-
-
-
-
-    // promise ??? yup yup
-    // if (pieceEl) pieceEl.remove()
-
-    // END
+    //TODO : move to fp error handling with monads and shit
+    try {
+      const move = movePiece(gameMatrix, origin, destination)
+      handleMove(move)
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   const onPieceDragStart = ev => {
