@@ -69,13 +69,6 @@ const whiteArmyMoves = {
   queen: queenMoves
 }
 
-// const rookMoves = _.forEach(_.times(_._, 7), [
-//   (x) => ({y: 0, x: 1+x}),
-//   (x) => ({y: 0, x: -1-x}),
-//   (y) => ({y: 1+y, x: 0}),
-//   (y) => ({y: -1-y, x: 0})
-// ])
-
 const possibleMoves = (matrix, position) => {
   const piece = M.getPieceAtPosition(matrix, position)
 
@@ -138,13 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const onPieceDragStart = ev => {
-    // let data = {
-    //   originPosition: ev.currentTarget.parentNode.id,
-    //   pieceSlug: ev.currentTarget.id,
-    // }
     board.clearLastMove()
-    // data.possibleMoves = possibleMoves(gameMatrix, data.originPosition)
-    // console.log(data.possibleMoves);
+
     setData(ev, ev.currentTarget.parentNode.id)
     setMoveSource(ev.currentTarget.parentNode)
     // TODO: for nice drag and drop in chrome
