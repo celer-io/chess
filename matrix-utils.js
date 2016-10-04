@@ -61,5 +61,7 @@ module.exports = {
   getTransformed,
   getPiece,
   removePiece,
-  updatePiece
+  updatePiece,
+  coordsToPosition,
+  positionToCoords
 }

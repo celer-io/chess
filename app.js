@@ -25,14 +25,25 @@ const onSquareDragEnter = ev => {
 const onSquareDragLeave = ev => unSetMoveTarget(ev.target)
 const onPieceDragLeave = ev => unSetMoveTarget(ev.target.parentNode)
 
-const whitePawnMoves = [
-(matrix, x, y) => {
-  if (M.getPiece(M.coordsToPosition({x, y})))
-},
-  {y: 1, x: 0},
-  {y: 1, x: 1},
-  {y: 1, x: -1}
-]
+const whitePawnMoves = (matrix, x, y) => {
+  let moves = []
+  let deletes = []
+  if (y === 1) {
+    moves = _.append([{y: 2, x: 0}], moves)
+		//TODO : refactor !
+    if (M.getPiece(M.coordsToPosition( { x:x+1, y:y+1 } ), matrix)) {
+      moves = _.append([{y: 1, x: 1}], moves)
+      deletes = _.append([{y: 1, x: 1}], deletes)
+    }
+    if (M.getPiece(M.coordsToPosition({x:x+1, y:y-1}), matrix)) {
+      moves = _.append([{y: -1, x: 1}], moves)
+      deletes = _.append([{y: -1, x: 1}], deletes)
+    }
+		moves = _.append([{y: 1, x: 0}], moves)
+  }
+  //TODO : Implement enpassant
+  return {moves, deletes}
+}
 
 const blackPawnMoves = [
   {y: -1, x: 0},
@@ -77,9 +88,10 @@ const whiteArmyMoves = {
 
 const possibleMoves = (matrix, position) => {
   const piece = M.getPiece(matrix, position)
+  const coords = M.coordsToPosition(position)
 
   if (piece.color === 'white') {
-    return whiteArmyMoves[piece.type].map(t => {
+    return whiteArmyMoves[piece.type](matrix, coords.x, coords.y).map(t => { //TODO : replace map
       return M.getTransformed(position, t)
     })
   }
