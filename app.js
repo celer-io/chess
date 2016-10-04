@@ -25,7 +25,6 @@ const onSquareDragEnter = ev => {
 const onSquareDragLeave = ev => unSetMoveTarget(ev.target)
 const onPieceDragLeave = ev => unSetMoveTarget(ev.target.parentNode)
 
-<<<<<<< d045b711a617b9e03ae15e6f0fe8586891704e0c
 const whitePawnMoves = (matrix, x, y) => {
   let moves = []
   let deletes = []
@@ -45,22 +44,6 @@ const whitePawnMoves = (matrix, x, y) => {
   //TODO : Implement enpassant
   return {moves, deletes}
 }
-=======
-// const whitePawnMoves = (matrix, x, y) => {
-//   let moves = []
-//   if ( y === 2 ) {
-//     moves = _.append([
-//       {}
-//     ], moves)
-//   }
-//   if ( M.getPiece(matrix, M.coordsToPosition({x, y+1})) &&  ) moves.push()
-// }
-//,
-  // {y: 1, x: 0},
-  // {y: 1, x: 1},
-  // {y: 1, x: -1}
-
->>>>>>> chtuffs
 
 const blackPawnMoves = [
   {y: -1, x: 0},
