@@ -1,14 +1,26 @@
 
-function getPieceAtPosition (matrix, position, transformation = { x: 0, y: 0 }) {
+function getPiece (matrix, position, transformation = { x: 0, y: 0 }) {
   const coords = positionToCoords(position)
 
   return matrix[coords.y + transformation.y][coords.x + transformation.x]
 }
 
-function setPieceAt (matrix, position, piece) {
+function setPiece (matrix, position, piece) {
   position = positionToCoords(position)
   matrix[position.y][position.x] = piece
   return matrix
+}
+
+function removePiece (matrix, position) {
+  position = positionToCoords(position)
+  delete matrix[position.y][position.x]
+  return matrix
+}
+
+function updatePiece (matrix, origin, destination) {
+  var piece = getPiece(matrix, origin)
+  matrix = removePiece(matrix, origin)
+  return setPiece(matrix, destination, piece)
 }
 
 // [['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8'],
@@ -35,17 +47,19 @@ function coordsToPosition (coords) {
 
 function getTransformed(position, t){
   const coords = positionToCoords(position)
-  const trd = {
+  const transformed = {
     x: coords.x + t.x,
     y: coords.y + t.y
   }
-  if (trd.x < 0 || trd.x > 7 || trd.y < 0 && trd.y > 7) return null
+  if (transformed.x < 0 || transformed.x > 7 || transformed.y < 0 && transformed.y > 7) return null
 
-  return coordsToPosition(trd)
+  return coordsToPosition(transformed)
 }
 
 module.exports = {
-  getPieceAtPosition,
-  setPieceAt,
-  getTransformed
+  setPiece,
+  getTransformed,
+  getPiece,
+  removePiece,
+  updatePiece
 }

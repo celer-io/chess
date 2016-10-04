@@ -23,6 +23,9 @@ const onSquareDragLeave = ev => unSetMoveTarget(ev.target)
 const onPieceDragLeave = ev => unSetMoveTarget(ev.target.parentNode)
 
 const whitePawnMoves = [
+(matrix, x, y) => {
+  if (M.getPiece(M.coordsToPosition({x, y})))
+},
   {y: 1, x: 0},
   {y: 1, x: 1},
   {y: 1, x: -1}
@@ -70,7 +73,7 @@ const whiteArmyMoves = {
 }
 
 const possibleMoves = (matrix, position) => {
-  const piece = M.getPieceAtPosition(matrix, position)
+  const piece = M.getPiece(matrix, position)
 
   if (piece.color === 'white') {
     return whiteArmyMoves[piece.type].map(t => {
@@ -85,21 +88,29 @@ const possibleMoves = (matrix, position) => {
 const movePiece = (matrix, origin, destination) => {
   const moves = possibleMoves(matrix, origin)
 
-  // if (_.not(_.any(_.equals(destination), moves))) throw 'noop'
+  if (_.not(_.any(_.equals(destination), moves))) throw 'not-possible-move'
 
   let res = {
     updates: [],
-    deletes: []
+    deletes: [],
+    matrix: null
   };
 
-  const pieceOnTarget = M.getPieceAtPosition(matrix, destination)
+
+
+  const pieceOnTarget = M.getPiece(matrix, destination)
 
   if (pieceOnTarget) res.deletes.push(getSlug(pieceOnTarget))
 
+
+
   res.updates.push({
     position: destination,
-    slug: getSlug(M.getPieceAtPosition(matrix, origin))
+    slug: getSlug(M.getPiece(matrix, origin))
   })
+
+  res.matrix = M.updatePiece(matrix, origin, destination)
+  // _.forEach(res.deletes)
 
   return res
 }
@@ -113,6 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const setData = (ev, data) => ev.dataTransfer.setData('text/plain', JSON.stringify(data))
 
   const handleMove = move => {
+    gameMatrix = move.matrix    //Unsafe
     _.forEach(updatePiece, move.updates)
     _.forEach(deletePiece, move.deletes)
   }
@@ -120,13 +132,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const onSquareDrop = ev => {
     ev.preventDefault()
     const origin = getData(ev)
-    const destination = ev.target.classList.contains('piece') ? ev.target.parentNode : ev.target
+    const destination = ev.target.classList.contains('piece') ? ev.target.parentNode.id : ev.target.id
+
     //TODO : move to fp error handling with monads and shit
     try {
       const move = movePiece(gameMatrix, origin, destination)
       handleMove(move)
+
     } catch (err) {
-      console.log(err);
+      console.warn(err)
     }
   }
 
@@ -222,7 +236,7 @@ function initGame () {
   ]
 
   initialSet.forEach(piece => {
-    matrix = M.setPieceAt(matrix, piece.position, piece)
+    matrix = M.setPiece(matrix, piece.position, piece)
   })
 
   return matrix
