@@ -27,67 +27,67 @@
 		&.move-available {
 			background-color: green;
 		}
+	}
 
-		.piece {
-			width: 50px;
-			height: 50px;
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			font-size: 2.5em;
-			cursor: default;
+	.piece {
+		width: 50px;
+		height: 50px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		font-size: 2.5em;
+		cursor: default;
 
-			&[draggable="true"] {
-				cursor: grab;
-			}
+		&[draggable="true"] {
+			cursor: grab;
+		}
 
-			&.white-king::before {
-				content: "\2654";
-			}
+		&.white-king::before {
+			content: "\2654";
+		}
 
-			&.white-queen::before {
-				content: "\2655";
-			}
+		&.white-queen::before {
+			content: "\2655";
+		}
 
-			&.white-rook::before {
-				content: "\2656";
-			}
+		&.white-rook::before {
+			content: "\2656";
+		}
 
-			&.white-bishop::before {
-				content: "\2657";
-			}
+		&.white-bishop::before {
+			content: "\2657";
+		}
 
-			&.white-knight::before {
-				content: "\2658";
-			}
+		&.white-knight::before {
+			content: "\2658";
+		}
 
-			&.white-pawn::before {
-				content: "\2659";
-			}
+		&.white-pawn::before {
+			content: "\2659";
+		}
 
-			&.black-king::before {
-				content: "\265A";
-			}
+		&.black-king::before {
+			content: "\265A";
+		}
 
-			&.black-queen::before {
-				content: "\265B";
-			}
+		&.black-queen::before {
+			content: "\265B";
+		}
 
-			&.black-rook::before {
-				content: "\265C";
-			}
+		&.black-rook::before {
+			content: "\265C";
+		}
 
-			&.black-bishop::before {
-				content: "\265D";
-			}
+		&.black-bishop::before {
+			content: "\265D";
+		}
 
-			&.black-knight::before {
-				content: "\265E";
-			}
+		&.black-knight::before {
+			content: "\265E";
+		}
 
-			&.black-pawn::before {
-				content: "\265F";
-			}
+		&.black-pawn::before {
+			content: "\265F";
 		}
 	}
 }

@@ -17,8 +17,11 @@ const unSetMoveTarget = removeClass('move-target')
 const setMoveSource = addClass('move-source')
 
 const onSquareDragOver = ev => ev.preventDefault()
-const onSquareDragEnter = ev => setMoveTarget(ev.target)
-const onPieceDragEnter = ev => setMoveTarget(ev.target.parentNode)
+const onSquareDragEnter = ev => {
+  if (!ev.target.classList.contains('piece')) {
+    setMoveTarget(ev.target)
+  }
+}
 const onSquareDragLeave = ev => unSetMoveTarget(ev.target)
 const onPieceDragLeave = ev => unSetMoveTarget(ev.target.parentNode)
 
@@ -150,7 +153,10 @@ document.addEventListener('DOMContentLoaded', () => {
     setData(ev, ev.currentTarget.parentNode.id)
     setMoveSource(ev.currentTarget.parentNode)
     // TODO: for nice drag and drop in chrome
-    // event.dataTransfer.setDragImage(image, xOffset, yOffset)
+    var img = ev.currentTarget.cloneNode()
+    document.getElementById('img-box').appendChild(img)
+
+    ev.dataTransfer.setDragImage(img, 25, 25)
   }
 
   const deletePiece = slug => document.getElementById(slug).remove()
