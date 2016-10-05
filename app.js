@@ -25,17 +25,17 @@ const onSquareDragEnter = ev => {
 const onSquareDragLeave = ev => unSetMoveTarget(ev.target)
 const onPieceDragLeave = ev => unSetMoveTarget(ev.target.parentNode)
 
-const whitePawnMoves = (matrix, x, y) => {
+const whitePawnMoves = (matrix, coords) => {
   let moves = []
   let deletes = []
-  if (y === 1) {
+  if (coords.y === 1) {
     moves = _.append([{y: 2, x: 0}], moves)
 		//TODO : refactor !
-    if (M.getPiece(M.coordsToPosition( { x:x+1, y:y+1 } ), matrix)) {
+    if (M.get(M.transform({x:1, y:1}), matrix)) {
       moves = _.append([{y: 1, x: 1}], moves)
       deletes = _.append([{y: 1, x: 1}], deletes)
     }
-    if (M.getPiece(M.coordsToPosition({x:x+1, y:y-1}), matrix)) {
+    if (M.get(M.transform({x:1, y:-1}), matrix)) {
       moves = _.append([{y: -1, x: 1}], moves)
       deletes = _.append([{y: -1, x: 1}], deletes)
     }
@@ -101,12 +101,11 @@ const whiteArmyMoves = {
 }
 
 const possibleMoves = (matrix, position) => {
-  const piece = M.getPiece(matrix, position)
-  const coords = M.coordsToPosition(position)
+  const piece = M.get(matrix, M.coords(position))
 
   if (piece.color === 'white') {
-    return whiteArmyMoves[piece.type](matrix, coords.x, coords.y).map(t => { //TODO : replace map
-      return M.getTransformed(position, t)
+    return whiteArmyMoves[piece.type](matrix, coords).map(transformation => { //TODO : replace map
+      return M.transorm(coords, transformation)
     })
   }
 
@@ -127,7 +126,7 @@ const movePiece = (matrix, origin, destination) => {
 
 
 
-  const pieceOnTarget = M.getPiece(matrix, destination)
+  const pieceOnTarget = M.get(matrix, destination)
 
   if (pieceOnTarget) res.deletes.push(getSlug(pieceOnTarget))
 
@@ -135,10 +134,10 @@ const movePiece = (matrix, origin, destination) => {
 
   res.updates.push({
     position: destination,
-    slug: getSlug(M.getPiece(matrix, origin))
+    slug: getSlug(M.get(matrix, origin))
   })
 
-  res.matrix = M.updatePiece(matrix, origin, destination)
+  res.matrix = M.update(matrix, origin, destination)
   // _.forEach(res.deletes)
 
   return res
@@ -148,7 +147,6 @@ const getSlug = piece => piece.color + piece.type + piece.id
 
 document.addEventListener('DOMContentLoaded', () => {
   let gameMatrix = initGame()
-
   const getData = ev => JSON.parse(ev.dataTransfer.getData('text/plain'))
   const setData = (ev, data) => ev.dataTransfer.setData('text/plain', JSON.stringify(data))
 
@@ -267,8 +265,9 @@ function initGame () {
     {type: 'pawn', id: '8', color: 'black', armyType: 'classic', position: 'h7'}
   ]
 
+  // initialSet.forEach(M.set(matrix, M.coords(_.prop('position'))))
   initialSet.forEach(piece => {
-    matrix = M.setPiece(matrix, piece.position, piece)
+    matrix = M.set(matrix, M.coords(_.prop('position', piece)), piece)
   })
 
   return matrix
