@@ -26,19 +26,22 @@ const onSquareDragLeave = ev => unSetMoveTarget(ev.target)
 const onPieceDragLeave = ev => unSetMoveTarget(ev.target.parentNode)
 
 const whitePawnMoves = (matrix, coords) => {
-  let moves = []
+	var sideMoves = [{x:1, y:1}, {x:1, y:-1}]
+  let moves = _.map( ,sideMoves)
   let deletes = []
+  let ret;
   if (coords.y === 1) {
     moves = _.append([{y: 2, x: 0}], moves)
 		//TODO : refactor !
-    if (M.get(M.transform({x:1, y:1}), matrix)) {
-      moves = _.append([{y: 1, x: 1}], moves)
-      deletes = _.append([{y: 1, x: 1}], deletes)
-    }
-    if (M.get(M.transform({x:1, y:-1}), matrix)) {
-      moves = _.append([{y: -1, x: 1}], moves)
-      deletes = _.append([{y: -1, x: 1}], deletes)
-    }
+    ret = _.assoc('moves', moves, _.assoc('deletes', deletes, {}))
+    // if (M.get(M.transform({x:1, y:1}), matrix)) {
+    //   moves = _.append([{y: 1, x: 1}], moves)
+    //   deletes = _.append([{y: 1, x: 1}], deletes)
+    // }
+    // if (M.get(M.transform({x:1, y:-1}), matrix)) {
+    //   moves = _.append([{y: -1, x: 1}], moves)
+    //   deletes = _.append([{y: -1, x: 1}], deletes)
+    // }
 		moves = _.append([{y: 1, x: 0}], moves)
   }
   //TODO : Implement enpassant
@@ -124,13 +127,9 @@ const movePiece = (matrix, origin, destination) => {
     matrix: null
   };
 
-
-
   const pieceOnTarget = M.get(matrix, destination)
 
   if (pieceOnTarget) res.deletes.push(getSlug(pieceOnTarget))
-
-
 
   res.updates.push({
     position: destination,

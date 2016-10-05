@@ -1,7 +1,10 @@
 'use strict'
 const _ = require('ramda')
 
-const coordsLens = (coords) => _.compose(_.lensIndex(_.prop('x', coords)), _.lensIndex(_.prop('y', coords)))
+const lensX = _.compose(_.prop('x'), _.lensIndex)
+const lensY = _.compose(_.prop('y'), _.lensIndex)
+const coordsLens = (coords) => _.compose(lensX(coords), lensY(coords))
+
 
 const get = _.curry((matrix, coords) => _.view(coordsLens(coords), matrix))
 
