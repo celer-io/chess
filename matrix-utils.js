@@ -1,62 +1,86 @@
 'use strict'
 const _ = require('ramda')
 
-const lensX = _.compose(_.prop('x'), _.lensIndex)
-const lensY = _.compose(_.prop('y'), _.lensIndex)
-const coordsLens = (coords) => _.compose(lensX(coords), lensY(coords))
+const lensX = (coords) => _.lensIndex(_.prop('x', coords))
 
+const lensY = (coords) => _.lensIndex(_.prop('y', coords))
 
-const get = _.curry((matrix, coords) => _.view(coordsLens(coords), matrix))
+const lensCoords = (coords) => _.compose(lensX(coords), lensY(coords))
 
-const set = _.curry((matrix, coords, piece) => _.set(coordsLens(coords), piece, matrix))
+const get = _.curry((matrix, coords) => _.view(lensCoords(coords), matrix))
 
-const remove = _.curry((matrix, coords) => _.set(coordsLens(coords), null, matrix))
+const set = _.curry((matrix, coords, piece) => _.set(lensCoords(coords), piece, matrix))
 
-// const remove = (matrix, coords) => {
-//   delete matrix[coords.y][coords.x]
-//   return matrix
-// }
+const remove = _.curry((matrix, coords) => _.set(lensCoords(coords), null, matrix))
 
-const update = (matrix, origin, destination) => remove(set(matrix, destination, get(matrix, origin)), origin)
+const update = (matrix, origin, destination) => {
+  return remove(set(matrix, destination, get(matrix, origin)), origin)
+}
 
-// const update = (matrix, origin, destination) => {
-//   var piece = getPiece(matrix, origin)
-//   matrix = removePiece(matrix, origin)
-//   return setPiece(matrix, destination, piece)
-// }
+const pieceAfterTransform = (matrix, origin, transformation) => {
+  const transformed = transform(origin, transformation)
+  if (!transformed) return null
 
-const transform = (origin, destination) => {
+  return get(matrix, transformed)
+}
+
+const anyPieceAfterTransform = _.curry((matrix, origin, transformation) => {
+  const piece = pieceAfterTransform(matrix, origin, transformation)
+  if (!piece) return false
+
+  return true
+})
+
+const transform = _.curry((origin, transformation) => {
   const transformed = {
-    x: origin.x + destination.x,
-    y: origin.y + destination.y
+    x: origin.x + transformation.x,
+    y: origin.y + transformation.y
   }
   if (transformed.x < 0 || transformed.x > 7 || transformed.y < 0 && transformed.y > 7) return null
   return transformed
+})
+
+const applyMove = (matrix, move, origin) => {
+  const destination = _.prop('update', move)
+  const deletes = _.prop('deletes', move)
+
+  return update(_.reduce(remove, matrix, deletes), origin, destination)
 }
 
-// [[a8,b8,c8,d8,e8,f8,g8,h8],
-//  [a7,b7,c7,d7,e7,f7,g7,h7],
-//  [a6,b6,c6,d6,e6,f6,g6,h6],
-//  [a5,b5,c5,d5,e5,f5,g5,h5],
-//  [a4,b4,c4,d4,e4,f4,g4,h4],
-//  [a3,b3,c3,d3,e3,f3,g3,h3],
-//  [a2,b2,c2,d2,e2,f2,g2,h2],
-//  [a1,b1,c1,d1,e1,f1,g1,h1]]
+const transformMove = _.curry((origin, move) => {
+  if (!transform(origin, move.update)) return null
+
+  return {
+    update: transform(origin, move.update),
+    deletes: _.map(transform(origin), move.deletes)
+  };
+})
 
 const letterToY = { a: 0, b: 1, c: 2, d: 3, e: 4, f: 5, g: 6, h: 7 }
 
 const coords = (position) => {
   return {
-    x: _.subtract(7, _.dec(_.last(position))),
+    x: _.subtract(7, _.dec(_.last(position))), // XXX: x = 7 - (number - 1)
     y: _.prop(_.head(position), letterToY)
   }
 }
 
 const YtoLetter = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 
+const position = coords => _.concat(
+  _.view(lensY(coords), YtoLetter),
+  _.subtract(8, _.prop('x', coords))
+)
 
-// _.concat(_.view(_.lensIndex(_.prop('x', coords)), XtoLetter), _.inc(_.prop('y', coords)));
-
-const position = coords => _.concat(_.view(_.lensIndex(_.prop('y', coords)), YtoLetter), _.add(7, _.prop('x', coords)))
-
-module.exports = { set, transform, get, remove, update, position, coords }
+module.exports = {
+  set,
+  transform,
+  get,
+  remove,
+  update,
+  position,
+  coords,
+  anyPieceAfterTransform,
+  transformMove,
+  applyMove
+}

@@ -2,6 +2,7 @@
 const board = require('./board.js')
 const _ = require('ramda')
 const M = require('./matrix-utils.js')
+const notNil = _.compose(_.not, _.isNil)
 
 const trace = _.curry(function(tag, x) {
   console.log(tag, x)
@@ -26,148 +27,164 @@ const onSquareDragLeave = ev => unSetMoveTarget(ev.target)
 const onPieceDragLeave = ev => unSetMoveTarget(ev.target.parentNode)
 
 const whitePawnMoves = (matrix, coords) => {
-	var sideMoves = [{x:1, y:1}, {x:1, y:-1}]
-  let moves = _.map( ,sideMoves)
-  let deletes = []
-  let ret;
-  if (coords.y === 1) {
-    moves = _.append([{y: 2, x: 0}], moves)
-		//TODO : refactor !
-    ret = _.assoc('moves', moves, _.assoc('deletes', deletes, {}))
-    // if (M.get(M.transform({x:1, y:1}), matrix)) {
-    //   moves = _.append([{y: 1, x: 1}], moves)
-    //   deletes = _.append([{y: 1, x: 1}], deletes)
-    // }
-    // if (M.get(M.transform({x:1, y:-1}), matrix)) {
-    //   moves = _.append([{y: -1, x: 1}], moves)
-    //   deletes = _.append([{y: -1, x: 1}], deletes)
-    // }
-		moves = _.append([{y: 1, x: 0}], moves)
+  const sideMoves = _.filter(M.anyPieceAfterTransform(matrix, coords), [{x:-1, y:-1}, {x:-1, y:1}])
+
+  let moves = [{
+    update: {x: -1, y: 0},
+    deletes: []
+  }]
+
+  // TODO: get rid of mutation with lensMoves
+  if (coords.x === 6) {
+    moves = _.append({
+      update: {x: -2, y: 0},
+      deletes: []
+    }, moves)
+
+    //TODO : Implement enpassant
+    moves = _.append(_.map(move => ({
+      update: move,
+      deletes: [move]
+    }), sideMoves), moves)
+
+    moves = _.flatten(moves)
   }
-  //TODO : Implement enpassant
-  return {moves, deletes}
+  return _.filter(notNil, _.map(M.transformMove(coords), moves))
 }
 
-const blackPawnMoves = [
-  {y: -1, x: 0},
-  {y: -1, x: 1},
-  {y: -1, x: -1}
-]
+//      y0 y1 y2 y3 y4 y5 y6 y7
+// x0 [[a8,b8,c8,d8,e8,f8,g8,h8],
+// x1  [a7,b7,c7,d7,e7,f7,g7,h7],
+// x2  [a6,b6,c6,d6,e6,f6,g6,h6],
+// x3  [a5,b5,c5,d5,e5,f5,g5,h5],
+// x4  [a4,b4,c4,d4,e4,f4,g4,h4],
+// x5  [a3,b3,c3,d3,e3,f3,g3,h3],
+// x6  [a2,b2,c2,d2,e2,f2,g2,h2],
+// x7  [a1,b1,c1,d1,e1,f1,g1,h1]]
+const knightMoves = (matrix, coords) => {
+  const possibles = [
+    {x:2, y: 1},
+    {x:2, y: -1},
+    {x:1, y: 2},
+    {x:-1, y: 2},
+    {x:-2, y: 1},
+    {x:-2, y: -1},
+    {x:1, y: -2},
+    {x:-1, y: -2}
+  ]
 
-const knightMoves = (matrix, x, y) => {
-  return {
-    moves:[
-      {y: 2, x: 1},
-      {y: 2, x: -1},
-      {y: 1, x: 2},
-      {y: -1, x: 2},
-      {y: -2, x: 1},
-      {y: -2, x: -1},
-      {y: 1, x: -2},
-      {y: -1, x: -2}
-    ],
-    deletes:[
-      {y: 2, x: 1},
-      {y: 2, x: -1},
-      {y: 1, x: 2},
-      {y: -1, x: 2},
-      {y: -2, x: 1},
-      {y: -2, x: -1},
-      {y: 1, x: -2},
-      {y: -1, x: -2}
-    ]
-  }
+  const moves = _.map( possible => {
+    return {
+      update: possible,
+      deletes: M.anyPieceAfterTransform(matrix, coords, possible) ? [possible] : []
+    }
+  }, possibles)
+
+  return _.filter(notNil, _.map(M.transformMove(coords), moves))
 }
 
-const rookMoves = _.flatten([
-  _.times((x) => ({y: 0, x: 1+x}), 7),
-  _.times((x) => ({y: 0, x: -1-x}), 7),
-  _.times((y) => ({y: 1+y, x: 0}), 7),
-  _.times((y) => ({y: -1-y, x: 0}), 7)
-])
+const rookMoves = (matrix, coords) => {
+  const possibles =  _.flatten([
+    _.times((x) => ({y: 0, x: 1+x}), 7),
+    _.times((x) => ({y: 0, x: -1-x}), 7),
+    _.times((y) => ({y: 1+y, x: 0}), 7),
+    _.times((y) => ({y: -1-y, x: 0}), 7)
+  ])
 
-const bishopMoves = _.flatten([
-  _.times((n) => ({y: 1+n, x: 1+n}), 7),
-  _.times((n) => ({y: -1-n, x: -1-n}), 7),
-  _.times((n) => ({y: 1+n, x: -1-n}), 7),
-  _.times((n) => ({y: -1-n, x: 1+n}), 7)
-])
+  const moves = _.map( possible => {
+    return {
+      update: possible,
+      deletes: M.anyPieceAfterTransform(matrix, coords, possible) ? [possible] : []
+    }
+  }, possibles)
 
-const queenMoves = _.flatten([rookMoves, bishopMoves])
+  return _.filter(notNil, _.map(M.transformMove(coords), moves))
+}
+//
+// const bishopMoves = _.flatten([
+//   _.times((n) => ({y: 1+n, x: 1+n}), 7),
+//   _.times((n) => ({y: -1-n, x: -1-n}), 7),
+//   _.times((n) => ({y: 1+n, x: -1-n}), 7),
+//   _.times((n) => ({y: -1-n, x: 1+n}), 7)
+// ])
+//
+// const queenMoves = _.flatten([rookMoves, bishopMoves])
 
 const whiteArmyMoves = {
   pawn: whitePawnMoves,
-  knight: knightMoves,
+  knight: knightMoves
   rook: rookMoves,
-  bishop: bishopMoves,
-  queen: queenMoves
+  // bishop: bishopMoves,
+  // queen: queenMoves
 }
 
-const possibleMoves = (matrix, position) => {
-  const piece = M.get(matrix, M.coords(position))
 
-  if (piece.color === 'white') {
-    return whiteArmyMoves[piece.type](matrix, coords).map(transformation => { //TODO : replace map
-      return M.transorm(coords, transformation)
-    })
+const movesOf = (piece) => {
+  if (piece.color === 'black') return []
+
+  return whiteArmyMoves[piece.type]
+}
+
+
+const toInstructions = _.curry((matrix, origin, move) => {
+  const slugAt = _.curry((matrix, coords) => getSlug(M.get(matrix, coords)))
+  // TODO: replace with lenses ? meh...
+  const update = _.prop('update', move)
+  const deletes = _.prop('deletes', move)
+
+  return {
+    orgin: origin,
+    animation: null,
+    update: {
+      position: M.position(update),
+      slug: slugAt(matrix, origin)
+    },
+    deletes: _.unless(_.isEmpty, _.map(slugAt(matrix))) (deletes),
+    newMatrix: M.applyMove(matrix, move, origin)
   }
+})
 
-  return []
+const getMoveInstructions = (matrix, originPosition, target) => {
+  const origin = M.coords(originPosition)
+  const destination = M.coords(target)
+  const piece = M.get(matrix, origin)
+  const moves = movesOf(piece) (matrix, origin)
+  // TODO: change _.prop('update') to someting more appropriate when possible move will not (only) be defined by update
+  const move = _.find(_.propEq('update', destination), moves)
+  if (!move) return { error: 'no-can-move' }
+  return toInstructions(matrix, origin, move)
 }
 
-
-const movePiece = (matrix, origin, destination) => {
-  const moves = possibleMoves(matrix, origin)
-
-  if (_.not(_.any(_.equals(destination), moves))) throw 'not-possible-move'
-
-  let res = {
-    updates: [],
-    deletes: [],
-    matrix: null
-  };
-
-  const pieceOnTarget = M.get(matrix, destination)
-
-  if (pieceOnTarget) res.deletes.push(getSlug(pieceOnTarget))
-
-  res.updates.push({
-    position: destination,
-    slug: getSlug(M.get(matrix, origin))
-  })
-
-  res.matrix = M.update(matrix, origin, destination)
-  // _.forEach(res.deletes)
-
-  return res
+const getPossibleMoves = (matrix, originPosition) => {
+  const origin = M.coords(originPosition)
+  const piece = M.get(matrix, origin)
+  const moves = movesOf(piece) (matrix, origin)
+  return _.map(toInstructions(matrix, origin), moves)
 }
 
 const getSlug = piece => piece.color + piece.type + piece.id
 
 document.addEventListener('DOMContentLoaded', () => {
-  let gameMatrix = initGame()
+  // let game = startGame()
+  let game = initGame()
   const getData = ev => JSON.parse(ev.dataTransfer.getData('text/plain'))
   const setData = (ev, data) => ev.dataTransfer.setData('text/plain', JSON.stringify(data))
 
-  const handleMove = move => {
-    gameMatrix = move.matrix    //Unsafe
-    _.forEach(updatePiece, move.updates)
-    _.forEach(deletePiece, move.deletes)
+  const handleInstructions = instructions => {
+    if (instructions.error) return console.warn(instructions.error)
+
+    game.matrix = instructions.newMatrix    //Unsafe
+
+    updatePiece(instructions.update)
+    _.forEach(deletePiece, instructions.deletes)
   }
 
   const onSquareDrop = ev => {
     ev.preventDefault()
     const origin = getData(ev)
     const destination = ev.target.classList.contains('piece') ? ev.target.parentNode.id : ev.target.id
-
-    //TODO : move to fp error handling with monads and shit
-    try {
-      const move = movePiece(gameMatrix, origin, destination)
-      handleMove(move)
-
-    } catch (err) {
-      console.warn(err)
-    }
+    const instructions = getMoveInstructions(game.matrix, origin, destination)
+    handleInstructions(instructions)
   }
 
   const onPieceDragStart = ev => {
@@ -188,12 +205,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const createPiece = piece => board.drawPiece(piece.position, board.createPiece(piece.color, piece.type, piece.id))//To refactor
 
-  const notNil = _.compose(_.not, _.isNil)
-
   //matrix
   const draw = _.compose(_.forEach(createPiece),_.filter(notNil),_.flatten)
 
-  draw(gameMatrix)
+  draw(game.matrix)
 
   //matrix
   const whiteArmy = _.compose(_.filter(_.propEq('color','white')), _.filter(notNil), _.flatten)
@@ -205,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
   //matrix
   const setWhiteArmyDraggable = _.compose(_.forEach(setDraggable), whiteArmy)
 
-  setWhiteArmyDraggable(gameMatrix)
+  setWhiteArmyDraggable(game.matrix)
 
 
   board.getSquares().forEach((square) => {
@@ -216,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
   })
 })
 
-function initGame () {
+function initGame() {
   let matrix = [
     new Array(8),
     new Array(8),
@@ -265,9 +280,9 @@ function initGame () {
   ]
 
   // initialSet.forEach(M.set(matrix, M.coords(_.prop('position'))))
-  initialSet.forEach(piece => {
+  _.forEach(piece => {
     matrix = M.set(matrix, M.coords(_.prop('position', piece)), piece)
-  })
+  }, initialSet)
 
-  return matrix
+  return {matrix}
 }
