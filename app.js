@@ -75,6 +75,7 @@ const knightMoves = (matrix, coords) => {
 }
 
 // const absolute = x => (x > 0) ? x : 0 - x //useless stuff ?
+const absolute = _.when() //useless stuff ?
 
 //      y0 y1 y2 y3 y4 y5 y6 y7
 // x0 [[a8,b8,c8,d8,e8,f8,g8,h8],
@@ -86,28 +87,24 @@ const knightMoves = (matrix, coords) => {
 // x6  [a2,b2,c2,d2,e2,f2,g2,h2],
 // x7  [a1,b1,c1,d1,e1,f1,g1,h1]]
 const rookMoves = (matrix, coords) => {
-  //TODO: find a better way to compute possibles, taking coords into params
-  // const possibles =  _.flatten([
-  //   _.times((x) => ({y: 0, x: 1+x}), 7),
-  //   _.times((x) => ({y: 0, x: -1-x}), 7),
-  //   _.times((y) => ({y: 1+y, x: 0}), 7),
-  //   _.times((y) => ({y: -1-y, x: 0}), 7)
-  // ])
-
   // var machin = _.map(_.subtract(coords.x), [0, 1, 2, 3, 4, 5, 6, 7]) //for x:2 => [2, 1, 0,-1,-2,-3,-4,-5]
   // var machin = _.times(_.subtract(coords.x), 8)
+
   const xMoves = _.map(x => ({x, y:0}), _.times(_.subtract(coords.x), 8))
   const yMoves = _.map(y => ({x:0, y}), _.times(_.subtract(coords.y), 8))
 
   const possibles = _.filter(coords => {
-    return coords.x != 0 && coords.y != 0 // TODO: remove if coords === {x:0, y:0}
+    return _.equals({x:0, y:0}, coords)
   }, _.concat(xMoves, yMoves))
 
-  const transducer = R.compose(R.map(R.add(1)), R.take(2)) // TODO
+  const transducer = x => x + 1 // TODO: get piece after transform, if piece == white
+  // _.transduce(transducer, _.append, [], possibles)
 
-  return _.transduce(transducer, _.append, [], possibles)
+  return [{
+    update:{x:1,y:0},
+    update:[{x:1,y:0}]
+  }]
 
-  //
   // const moves = _.map( possible => ({
   //     update: possible,
   //     deletes: M.anyPieceAfterTransform(matrix, coords, possible) ? [possible] : []
