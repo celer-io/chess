@@ -31,6 +31,7 @@ const anyPieceAfterTransform = _.curry((matrix, origin, transformation) => {
   return true
 })
 
+//applies relative coords(transformation) to origin coords
 const transform = _.curry((origin, transformation) => {
   const transformed = {
     x: origin.x + transformation.x,
