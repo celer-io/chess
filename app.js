@@ -64,18 +64,15 @@ const knightMoves = (matrix, coords) => {
     {x:-1, y: -2}
   ]
 
-  const moves = _.map( possible => {
-    return {
-      update: possible,
-      deletes: M.anyPieceAfterTransform(matrix, coords, possible) ? [possible] : []
-    }
-  }, possibles)
+  const moves = _.map( possible => ({
+    update: possible,
+    deletes: M.anyPieceAfterTransform(matrix, coords, possible) ? [possible] : []
+  }), possibles)
 
   return _.filter(notNil, _.map(M.transformMove(coords), moves))
 }
 
 // const absolute = x => (x > 0) ? x : 0 - x //useless stuff ?
-const absolute = _.when() //useless stuff ?
 
 //      y0 y1 y2 y3 y4 y5 y6 y7
 // x0 [[a8,b8,c8,d8,e8,f8,g8,h8],
@@ -86,31 +83,34 @@ const absolute = _.when() //useless stuff ?
 // x5  [a3,b3,c3,d3,e3,f3,g3,h3],
 // x6  [a2,b2,c2,d2,e2,f2,g2,h2],
 // x7  [a1,b1,c1,d1,e1,f1,g1,h1]]
+const isWhite => _.propEq('color', 'white')
+
 const rookMoves = (matrix, coords) => {
-  // var machin = _.map(_.subtract(coords.x), [0, 1, 2, 3, 4, 5, 6, 7]) //for x:2 => [2, 1, 0,-1,-2,-3,-4,-5]
-  // var machin = _.times(_.subtract(coords.x), 8)
+  const xMoves = _.map(x => ({x: x+1, y: 0}), _.times(_.subtract(coords.x), 7))
+  const yMoves = _.map(y => ({x: 0, y: y+1}), _.times(_.subtract(coords.y), 7))
 
-  const xMoves = _.map(x => ({x, y:0}), _.times(_.subtract(coords.x), 8))
-  const yMoves = _.map(y => ({x:0, y}), _.times(_.subtract(coords.y), 8))
+  const possiblesXup = _.map(x => ({x: x+1, y: 0}), _.times(_.subtract(coords.x), 7))
+  const possiblesYup
+  const possiblesXdown
+  const possiblesYdown
 
-  const possibles = _.filter(coords => {
-    return _.equals({x:0, y:0}, coords)
-  }, _.concat(xMoves, yMoves))
+  const possibles = coords =>  _.concat(xMoves, yMoves)
 
-  const transducer = x => x + 1 // TODO: get piece after transform, if piece == white
-  // _.transduce(transducer, _.append, [], possibles)
+  const appendMove = (moves, move) => {
+    const transformed = M.transform(move)
+    const piece = M.get(transformed)
 
-  return [{
-    update:{x:1,y:0},
-    update:[{x:1,y:0}]
-  }]
+    if (!piece) return _.append({ update: transformed, deletes: []}, moves)
+    if (isWhite(piece)) return _.reduced(moves)
+    return _.append({ update: transformed, deletes: [transformed] }, moves)
+  }
 
-  // const moves = _.map( possible => ({
-  //     update: possible,
-  //     deletes: M.anyPieceAfterTransform(matrix, coords, possible) ? [possible] : []
-  //   }), possibles)
-  //
-  // return _.filter(notNil, _.map(M.transformMove(coords), moves))
+  return _.compose(
+    _.reduce(appendMove, _._, possiblesXup),
+    _.reduce(appendMove, _._, possiblesYup),
+    _.reduce(appendMove, _._, possiblesXdown),
+    _.reduce(appendMove, [], possiblesYdown)
+  ) ([])
 }
 //
 // const bishopMoves = _.flatten([
@@ -124,8 +124,8 @@ const rookMoves = (matrix, coords) => {
 
 const whiteArmyMoves = {
   pawn: whitePawnMoves,
-  knight: knightMoves
-  rook: rookMoves,
+  knight: knightMoves,
+  rook: rookMoves
   // bishop: bishopMoves,
   // queen: queenMoves
 }
