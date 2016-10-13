@@ -31,7 +31,7 @@ const anyPieceAfterTransform = _.curry((matrix, origin, transformation) => {
   return true
 })
 
-//applies relative coords(transformation) to origin coords
+// applies relative coords(transformation) to origin coords
 const transform = _.curry((origin, transformation) => {
   const transformed = {
     x: origin.x + transformation.x,
@@ -54,7 +54,7 @@ const transformMove = _.curry((origin, move) => {
   return {
     update: transform(origin, move.update),
     deletes: _.map(transform(origin), move.deletes)
-  };
+  }
 })
 
 const letterToY = { a: 0, b: 1, c: 2, d: 3, e: 4, f: 5, g: 6, h: 7 }
@@ -67,7 +67,6 @@ const coords = (position) => {
 }
 
 const YtoLetter = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-
 const position = coords => _.concat(
   _.view(lensY(coords), YtoLetter),
   _.subtract(8, _.prop('x', coords))

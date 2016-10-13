@@ -1,13 +1,13 @@
 'use strict'
-const board = require('./board.js')
+const board = require('./board')
 const _ = require('ramda')
-const M = require('./matrix-utils.js')
-const notNil = _.compose(_.not, _.isNil)
+const M = require('./utils/matrix')
+const Rules = require('./rules')
 
-const trace = _.curry(function(tag, x) {
-  console.log(tag, x)
-  return x
-})
+// const trace = _.curry(function(tag, x) {
+//   console.log(tag, x)
+//   return x
+// })
 
 const addListener = _.curry((eventName, handler, element) => element.addEventListener(eventName, handler, true))
 const addClass = _.curry((className, element) => element.classList.add(className))
@@ -23,178 +23,9 @@ const onSquareDragEnter = ev => {
     setMoveTarget(ev.target)
   }
 }
+
 const onSquareDragLeave = ev => unSetMoveTarget(ev.target)
-const onPieceDragLeave = ev => unSetMoveTarget(ev.target.parentNode)
-
-const whitePawnMoves = (matrix, coords) => {
-  const sideMoves = _.filter(M.anyPieceAfterTransform(matrix, coords), [{x:-1, y:-1}, {x:-1, y:1}])
-
-  let moves = [{
-    update: {x: -1, y: 0},
-    deletes: []
-  }]
-
-  //TODO : Implement enpassant
-  moves = _.append(_.map(move => ({
-    update: move,
-    deletes: [move]
-  }), sideMoves), moves)
-
-  // TODO: get rid of mutation with lensMoves
-  if (coords.x === 6) {
-    moves = _.append({
-      update: {x: -2, y: 0},
-      deletes: []
-    }, moves)
-
-    moves = _.flatten(moves)
-  }
-  return _.filter(notNil, _.map(M.transformMove(coords), moves))
-}
-
-const isWhite = _.propEq('color', 'white')
-const isBlack = _.propEq('color', 'black')
-const areOponents = _.curry((origin, piece) => {
-  console.log('areOponents :')
-  console.log('origin :', origin)
-  console.log('piece :', piece)
-  console.log('(isWhite(origin) && isBlack(piece)) || (isWhite(piece) && isBlack(origin)) :', (isWhite(origin) && isBlack(piece)) || (isWhite(piece) && isBlack(origin)))
-  return (isWhite(origin) && isBlack(piece)) || (isWhite(piece) && isBlack(origin))
-})
-const possiblesOf = coords => _.compose(_.reject(_.isNil), _.map(M.transform(coords)))
-
-const knightMoves = (matrix, coords) => {
-  const possibles = possiblesOf(coords) ([
-    {x:2, y: 1},
-    {x:2, y: -1},
-    {x:1, y: 2},
-    {x:-1, y: 2},
-    {x:-2, y: 1},
-    {x:-2, y: -1},
-    {x:1, y: -2},
-    {x:-1, y: -2}
-  ])
-
-  const isOponent = areOponents(M.get(matrix, coords))
-
-  const appendMove = (moves, possible) => {
-    const piece = M.get(matrix, possible)
-    if (!piece) return _.append({ update: possible, deletes: []}, moves)
-    if (isOponent(piece)) return _.append({ update: possible, deletes: [possible]}, moves)
-
-    return moves
-  }
-
-  return _.reduce(appendMove, [], possibles)
-}
-
-// const absolute = x => (x > 0) ? x : 0 - x //useless stuff ?
-
-//      y0 y1 y2 y3 y4 y5 y6 y7
-// x0 [[a8,b8,c8,d8,e8,f8,g8,h8],
-// x1  [a7,b7,c7,d7,e7,f7,g7,h7],
-// x2  [a6,b6,c6,d6,e6,f6,g6,h6],
-// x3  [a5,b5,c5,d5,e5,f5,g5,h5],
-// x4  [a4,b4,c4,d4,e4,f4,g4,h4],
-// x5  [a3,b3,c3,d3,e3,f3,g3,h3],
-// x6  [a2,b2,c2,d2,e2,f2,g2,h2],
-// x7  [a1,b1,c1,d1,e1,f1,g1,h1]]
-
-const rookMoves = (matrix, coords) => {
-  console.log('coords :', coords)
-  const possiblesXup   = possiblesOf(coords) (_.map(x => ({x: x+1, y: 0}), _.range(coords.x, 7)))
-  const possiblesYup   = possiblesOf(coords) (_.map(y => ({x: 0, y: y+1}), _.range(coords.y, 7)))
-  const possiblesXdown = possiblesOf(coords) (_.map(x => ({x: -x, y: 0}), _.range(1, coords.x)))
-  const possiblesYdown = possiblesOf(coords) (_.map(y => ({x: 0, y: -y}), _.range(1, coords.y)))
-
-  console.log('possiblesXup :', possiblesXup)
-  console.log('possiblesYup :', possiblesYup)
-  console.log('possiblesXdown :', possiblesXdown)
-  console.log('possiblesYdown :', possiblesYdown)
-
-  const isOponent = areOponents(M.get(matrix, coords))
-
-  const appendMove = (moves, possible) => {
-    const piece = M.get(matrix, possible)
-    if (!piece) return _.append({ update: possible, deletes: []}, moves)
-    if (isOponent(piece)) return _.reduced(moves)
-
-    return _.reduced(_.append({ update: possible, deletes: [possible] }, moves))
-  }
-
-  return _.compose(
-    _.reduce(appendMove, _.__, possiblesXup),
-    _.reduce(appendMove, _.__, possiblesYup),
-    _.reduce(appendMove, _.__, possiblesXdown),
-    _.reduce(appendMove, _.__, possiblesYdown)
-  ) ([])
-}
-//
-// const bishopMoves = _.flatten([
-//   _.times((n) => ({y: 1+n, x: 1+n}), 7),
-//   _.times((n) => ({y: -1-n, x: -1-n}), 7),
-//   _.times((n) => ({y: 1+n, x: -1-n}), 7),
-//   _.times((n) => ({y: -1-n, x: 1+n}), 7)
-// ])
-//
-// const queenMoves = _.flatten([rookMoves, bishopMoves])
-
-const whiteArmyMoves = {
-  pawn: whitePawnMoves,
-  knight: knightMoves,
-  rook: rookMoves
-  // bishop: bishopMoves,
-  // queen: queenMoves
-}
-
-
-const movesOf = (piece) => {
-  if (piece.color === 'black') return []
-
-  return whiteArmyMoves[piece.type]
-}
-
-
-const toInstructions = _.curry((matrix, origin, move) => {
-  const slugAt = _.curry((matrix, coords) => getSlug(M.get(matrix, coords)))
-  // TODO: replace with lenses ? meh...
-  const update = _.prop('update', move)
-  const deletes = _.prop('deletes', move)
-
-  return {
-    orgin: origin,
-    animation: null,
-    update: {
-      position: M.position(update),
-      slug: slugAt(matrix, origin)
-    },
-    deletes: _.unless(_.isEmpty, _.map(slugAt(matrix))) (deletes),
-    newMatrix: M.applyMove(matrix, move, origin)
-  }
-})
-
-const getMoveInstructions = (matrix, originPosition, target) => {
-  const origin = M.coords(originPosition)
-  const destination = M.coords(target)
-  const piece = M.get(matrix, origin)
-  const moves = movesOf(piece) (matrix, origin)
-  console.log('moves :', moves)
-  // TODO: change _.prop('update') to someting more appropriate when possible move will not (only) be defined by update
-  const move = _.find(_.propEq('update', destination), moves)
-  console.log('move :', move)
-
-  if (!move) return { error: 'no-can-move' }
-  return toInstructions(matrix, origin, move)
-}
-
-const getPossibleMoves = (matrix, originPosition) => {
-  const origin = M.coords(originPosition)
-  const piece = M.get(matrix, origin)
-  const moves = movesOf(piece) (matrix, origin)
-  return _.map(toInstructions(matrix, origin), moves)
-}
-
-const getSlug = piece => piece.color + piece.type + piece.id
+// const onPieceDragLeave = ev => unSetMoveTarget(ev.target.parentNode)
 
 document.addEventListener('DOMContentLoaded', () => {
   // let game = startGame()
@@ -205,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const handleInstructions = instructions => {
     if (instructions.error) return console.warn(instructions.error)
 
-    game.matrix = instructions.newMatrix    //Unsafe
+    game.matrix = instructions.newMatrix    // Unsafe
 
     updatePiece(instructions.update)
     _.forEach(deletePiece, instructions.deletes)
@@ -215,14 +46,15 @@ document.addEventListener('DOMContentLoaded', () => {
     ev.preventDefault()
     const origin = getData(ev)
     const destination = ev.target.classList.contains('piece') ? ev.target.parentNode.id : ev.target.id
-    const instructions = getMoveInstructions(game.matrix, origin, destination)
+    const instructions = Rules.getMoveInstructions(game.matrix, origin, destination)
     handleInstructions(instructions)
   }
 
   const onPieceDragStart = ev => {
     board.clearLastMove()
-
-    setData(ev, ev.currentTarget.parentNode.id)
+    const position = ev.currentTarget.parentNode.id
+    console.log('possibleMoves :', Rules.getPossibleMoves(game.matrix, position))
+    setData(ev, position)
     setMoveSource(ev.currentTarget.parentNode)
     // TODO: for nice drag and drop in chrome
     var img = ev.currentTarget.cloneNode()
@@ -235,25 +67,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const updatePiece = update => document.getElementById(update.position).appendChild(document.getElementById(update.slug))
 
-  const createPiece = piece => board.drawPiece(piece.position, board.createPiece(piece.color, piece.type, piece.id))//To refactor
+  const createPiece = piece => board.drawPiece(piece.position, board.createPiece(piece.color, piece.type, piece.id)) // To refactor
 
-  //matrix
-  const draw = _.compose(_.forEach(createPiece),_.filter(notNil),_.flatten)
+  // matrix
+  const draw = _.compose(_.forEach(createPiece), _.reject(_.isNil), _.flatten)
 
   draw(game.matrix)
 
-  //matrix
-  const whiteArmy = _.compose(_.filter(_.propEq('color','white')), _.filter(notNil), _.flatten)
+  // matrix
+  const whiteArmy = _.compose(_.filter(_.propEq('color', 'white')), _.reject(_.isNil), _.flatten)
 
-  //piece
+  // piece
   const setDraggable = _.compose(addListener('dragstart', onPieceDragStart), board.setDraggableAt, _.prop('position'))
 
-
-  //matrix
+  // matrix
   const setWhiteArmyDraggable = _.compose(_.forEach(setDraggable), whiteArmy)
 
   setWhiteArmyDraggable(game.matrix)
-
 
   board.getSquares().forEach((square) => {
     square.addEventListener('dragover', onSquareDragOver, false)
@@ -263,7 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
   })
 })
 
-function initGame() {
+// TODO: put this in Rules and remove M dependency in app
+function initGame () {
   let matrix = [
     new Array(8),
     new Array(8),
