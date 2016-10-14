@@ -29,6 +29,7 @@ const onSquareDragLeave = ev => unSetMoveTarget(ev.target)
 
 document.addEventListener('DOMContentLoaded', () => {
   // let game = startGame()
+  console.log('test watcher')
   let game = initGame()
   const getData = ev => JSON.parse(ev.dataTransfer.getData('text/plain'))
   const setData = (ev, data) => ev.dataTransfer.setData('text/plain', JSON.stringify(data))
