@@ -1,8 +1,8 @@
 'use strict'
 const board = require('./board')
-const _ = require('ramda')
 const M = require('./utils/matrix')
 const Rules = require('./rules')
+const _ = require('ramda')
 
 // const trace = _.curry(function(tag, x) {
 //   console.log(tag, x)
@@ -29,7 +29,6 @@ const onSquareDragLeave = ev => unSetMoveTarget(ev.target)
 
 document.addEventListener('DOMContentLoaded', () => {
   // let game = startGame()
-  console.log('test watcher')
   let game = initGame()
   const getData = ev => JSON.parse(ev.dataTransfer.getData('text/plain'))
   const setData = (ev, data) => ev.dataTransfer.setData('text/plain', JSON.stringify(data))

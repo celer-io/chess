@@ -1,10 +1,13 @@
 'use strict'
 const _ = require('ramda')
 
+// TODO: memoize ?
 const lensX = (coords) => _.lensIndex(_.prop('x', coords))
 
+// TODO: memoize ?
 const lensY = (coords) => _.lensIndex(_.prop('y', coords))
 
+// TODO: memoize
 const lensCoords = (coords) => _.compose(lensX(coords), lensY(coords))
 
 const get = _.curry((matrix, coords) => _.view(lensCoords(coords), matrix))
@@ -31,13 +34,14 @@ const anyPieceAfterTransform = _.curry((matrix, origin, transformation) => {
   return true
 })
 
+// TODO: memoize ?
 // applies relative coords(transformation) to origin coords
 const transform = _.curry((origin, transformation) => {
   const transformed = {
     x: origin.x + transformation.x,
     y: origin.y + transformation.y
   }
-  if (transformed.x < 0 || transformed.x > 7 || transformed.y < 0 && transformed.y > 7) return null
+  if (transformed.x < 0 || transformed.x > 7 || transformed.y < 0 || transformed.y > 7) return null
   return transformed
 })
 
@@ -48,17 +52,18 @@ const applyMove = (matrix, move, origin) => {
   return update(_.reduce(remove, matrix, deletes), origin, destination)
 }
 
-const transformMove = _.curry((origin, move) => {
-  if (!transform(origin, move.update)) return null
-
-  return {
-    update: transform(origin, move.update),
-    deletes: _.map(transform(origin), move.deletes)
-  }
-})
+// const transformMove = _.curry((origin, move) => {
+//   if (!transform(origin, move.update)) return null
+//
+//   return {
+//     update: transform(origin, move.update),
+//     deletes: _.map(transform(origin), move.deletes)
+//   }
+// })
 
 const letterToY = { a: 0, b: 1, c: 2, d: 3, e: 4, f: 5, g: 6, h: 7 }
 
+// TODO: memoize
 const coords = (position) => {
   return {
     x: _.subtract(7, _.dec(_.last(position))), // XXX: x = 7 - (number - 1)
@@ -67,6 +72,7 @@ const coords = (position) => {
 }
 
 const YtoLetter = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+// TODO: memoize
 const position = coords => _.concat(
   _.view(lensY(coords), YtoLetter),
   _.subtract(8, _.prop('x', coords))
@@ -81,6 +87,5 @@ module.exports = {
   position,
   coords,
   anyPieceAfterTransform,
-  transformMove,
   applyMove
 }
