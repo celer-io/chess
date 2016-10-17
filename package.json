@@ -16,7 +16,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint-sources": "./node_modules/.bin/eslint ./utils/*.js *.js",
+    "lint": "./node_modules/.bin/eslint ./utils/*.js *.js",
     "build": "./build.sh",
     "watch": "node node_modules/watch/cli.js ./build.sh -ud -p='/dist/'"
   },

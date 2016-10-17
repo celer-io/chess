@@ -1,5 +1,5 @@
 'use strict'
-const board = require('./board')
+const Board = require('./board')
 const M = require('./utils/matrix')
 const Rules = require('./rules')
 const _ = require('ramda')
@@ -9,93 +9,67 @@ const _ = require('ramda')
 //   return x
 // })
 
-const addListener = _.curry((eventName, handler, element) => element.addEventListener(eventName, handler, true))
-const addClass = _.curry((className, element) => element.classList.add(className))
-const removeClass = _.curry((className, element) => element.classList.remove(className))
-
-const setMoveTarget = addClass('move-target')
-const unSetMoveTarget = removeClass('move-target')
-const setMoveSource = addClass('move-source')
-
-const onSquareDragOver = ev => ev.preventDefault()
-const onSquareDragEnter = ev => {
-  if (!ev.target.classList.contains('piece')) {
-    setMoveTarget(ev.target)
-  }
-}
-
-const onSquareDragLeave = ev => unSetMoveTarget(ev.target)
-// const onPieceDragLeave = ev => unSetMoveTarget(ev.target.parentNode)
-
 document.addEventListener('DOMContentLoaded', () => {
   // let game = startGame()
   let game = initGame()
-  const getData = ev => JSON.parse(ev.dataTransfer.getData('text/plain'))
-  const setData = (ev, data) => ev.dataTransfer.setData('text/plain', JSON.stringify(data))
-
+  console.log('game.matrix :', game.matrix)
   const handleInstructions = instructions => {
     if (instructions.error) return console.warn(instructions.error)
 
     game.matrix = instructions.newMatrix    // Unsafe
 
-    updatePiece(instructions.update)
-    _.forEach(deletePiece, instructions.deletes)
+    Board.updatePiece(instructions.update)
+    _.forEach(Board.deletePiece, instructions.deletes)
   }
 
   const onSquareDrop = ev => {
     ev.preventDefault()
-    const origin = getData(ev)
+    const origin = Board.getData(ev)
     const destination = ev.target.classList.contains('piece') ? ev.target.parentNode.id : ev.target.id
     const instructions = Rules.getMoveInstructions(game.matrix, origin, destination)
     handleInstructions(instructions)
   }
 
   const onPieceDragStart = ev => {
-    board.clearLastMove()
+    Board.clearLastMove()
     const position = ev.currentTarget.parentNode.id
     console.log('possibleMoves :', Rules.getPossibleMoves(game.matrix, position))
-    setData(ev, position)
-    setMoveSource(ev.currentTarget.parentNode)
-    // TODO: for nice drag and drop in chrome
-    var img = ev.currentTarget.cloneNode()
-    document.getElementById('img-box').appendChild(img)
-
-    ev.dataTransfer.setDragImage(img, 25, 25)
+    Board.showPossibleMoves(Rules.getPossibleMoves(game.matrix, position))
+    Board.setData(ev, position)
+    Board.setMoveSource(ev.currentTarget.parentNode)
+    Board.niceDragImage(ev)
   }
 
-  const deletePiece = slug => document.getElementById(slug).remove()
+  const setDraggable = _.compose(Board.addListener('dragstart', onPieceDragStart), Board.setDraggableAt, _.prop('position'))
 
-  const updatePiece = update => document.getElementById(update.position).appendChild(document.getElementById(update.slug))
+  const setWhiteArmyDraggable = _.compose(_.forEach(setDraggable), M.getWhites)
 
-  const createPiece = piece => board.drawPiece(piece.position, board.createPiece(piece.color, piece.type, piece.id)) // To refactor
+  const onSquareDragOver = ev => ev.preventDefault()
+  const onSquareDragEnter = ev => {
+    if (!ev.target.classList.contains('piece')) {
+      Board.setMoveTarget(ev.target)
+    }
+  }
 
-  // matrix
-  const draw = _.compose(_.forEach(createPiece), _.reject(_.isNil), _.flatten)
+  const onSquareDragLeave = ev => Board.unSetMoveTarget(ev.target)
 
-  draw(game.matrix)
+  // const onPieceDragLeave = ev => unSetMoveTarget(ev.target.parentNode)
 
-  // matrix
-  const whiteArmy = _.compose(_.filter(_.propEq('color', 'white')), _.reject(_.isNil), _.flatten)
-
-  // piece
-  const setDraggable = _.compose(addListener('dragstart', onPieceDragStart), board.setDraggableAt, _.prop('position'))
-
-  // matrix
-  const setWhiteArmyDraggable = _.compose(_.forEach(setDraggable), whiteArmy)
+  Board.drawMatrix(game.matrix)
 
   setWhiteArmyDraggable(game.matrix)
 
-  board.getSquares().forEach((square) => {
-    square.addEventListener('dragover', onSquareDragOver, false)
-    square.addEventListener('dragenter', onSquareDragEnter, false)
-    square.addEventListener('dragleave', onSquareDragLeave, false)
-    square.addEventListener('drop', onSquareDrop, false)
+  _.forEach(Board.getSquaresEl(), (square) => {
+    Board.addListener('dragover', onSquareDragOver, square)
+    Board.addListener('dragenter', onSquareDragEnter, square)
+    Board.addListener('dragleave', onSquareDragLeave, square)
+    Board.addListener('drop', onSquareDrop, square)
   })
 })
 
 // TODO: put this in Rules and remove M dependency in app
 function initGame () {
-  let matrix = [
+  const emptyMatrix = [
     new Array(8),
     new Array(8),
     new Array(8),
@@ -106,7 +80,7 @@ function initGame () {
     new Array(8)
   ]
 
-  let initialSet = [
+  const initialSet = [
     {type: 'king', id: '', color: 'white', armyType: 'classic', position: 'e1'},
     {type: 'queen', id: '', color: 'white', armyType: 'classic', position: 'd1'},
     {type: 'rook', id: '1', color: 'white', armyType: 'classic', position: 'a1'},
@@ -141,11 +115,13 @@ function initGame () {
     {type: 'pawn', id: '7', color: 'black', armyType: 'classic', position: 'g7'},
     {type: 'pawn', id: '8', color: 'black', armyType: 'classic', position: 'h7'}
   ]
+  console.log('emptyMatrix :', emptyMatrix)
+  console.log('initialSet :', initialSet)
 
-  // initialSet.forEach(M.set(matrix, M.coords(_.prop('position'))))
-  _.forEach(piece => {
-    matrix = M.set(matrix, M.coords(_.prop('position', piece)), piece)
-  }, initialSet)
+  const appendPiece = (matrix, piece) => {
+    console.log('matrix :', matrix)
+    return M.set(matrix, M.coords(piece.position), _.omit(['position'], piece))
+  }
 
-  return {matrix}
+  return _.reduce(appendPiece, emptyMatrix, initialSet)
 }

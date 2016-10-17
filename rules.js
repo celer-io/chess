@@ -42,7 +42,6 @@ const toDiag = (xs, ys) => {
   return _.times(idx => coordsOf(xs[idx], ys[idx]), xs.length)
 }
 
-
 //      y0 y1 y2 y3 y4 y5 y6 y7
 // x0 [[a8,b8,c8,d8,e8,f8,g8,h8],
 // x1  [a7,b7,c7,d7,e7,f7,g7,h7],
@@ -52,6 +51,8 @@ const toDiag = (xs, ys) => {
 // x5  [a3,b3,c3,d3,e3,f3,g3,h3],
 // x6  [a2,b2,c2,d2,e2,f2,g2,h2],
 // x7  [a1,b1,c1,d1,e1,f1,g1,h1]]
+
+// TODO: Handle en passant and elevation...
 const whitePawnMoves = (matrix, coords) => {
   const sides = [coordsOf(-1, -1), coordsOf(-1, 1)]
   const front = coords.x === 6

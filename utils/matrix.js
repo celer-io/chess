@@ -78,6 +78,9 @@ const position = coords => _.concat(
   _.subtract(8, _.prop('x', coords))
 )
 
+  // matrix
+const getWhites = _.compose(_.filter(_.propEq('color', 'white')), _.reject(_.isNil), _.flatten)
+
 module.exports = {
   set,
   transform,
@@ -87,5 +90,6 @@ module.exports = {
   position,
   coords,
   anyPieceAfterTransform,
-  applyMove
+  applyMove,
+  getWhites
 }
