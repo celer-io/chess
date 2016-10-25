@@ -1,14 +1,21 @@
 'use strict'
 const _ = require('ramda')
+const M = require('./utils/matrix')
 
-// function movePiece (oldPosition, newPosition) {
-//   return drawPiece(newPosition, getPiece(oldPosition))
+// function setDraggableAt (position) {
+//   getPieceEl(position).setAttribute('draggable', true)
+//   return getPieceEl(position)
 // }
 
-function setDraggableAt (position) {
-  getPieceEl(position).setAttribute('draggable', true)
-  return getPieceEl(position)
-}
+const getSlug = piece => piece.color + piece.type + piece.id
+
+const setDraggable = _.curry((handler, piece) => {
+  const slug = getSlug(piece)
+  const pieceEl = document.getElementById(slug)
+  pieceEl.setAttribute('draggable', true)
+  addListener('dragstart', handler, pieceEl)
+  return pieceEl
+})
 
 // function removePiece (position) {
 //   return getPiece(position).remove()
@@ -22,20 +29,21 @@ function createPieceEl (color, type, id) {
   return piece
 }
 
-function drawPieceEl (position, piece) {
-  return document.getElementById(position).appendChild(piece)
+function drawPiece (position, piece) {
+  const pieceEl = createPieceEl(piece.color, piece.type, piece.id)
+  return document.getElementById(position).appendChild(pieceEl)
 }
 
-function getPieceEl (position) {
-  return document.getElementById(position).firstChild
-}
+// function getPieceEl (position) {
+//   return document.getElementById(position).firstChild
+// }
 
 function getSquaresEl () {
   return Array.from(document.getElementsByClassName('square'))
 }
 
 function clearLastMove () {
-  const moveClasses = ['move-target', 'move-source']
+  const moveClasses = ['move-target', 'move-source', 'move-available']
 
   moveClasses.forEach((moveClass) => {
     Array.from(document.getElementsByClassName(moveClass))
@@ -52,6 +60,8 @@ const removeClass = _.curry((className, element) => element.classList.remove(cla
 const setMoveTarget = addClass('move-target')
 const unSetMoveTarget = removeClass('move-target')
 const setMoveSource = addClass('move-source')
+const setMoveAvailable = addClass('move-available')
+// const unSetMoveAvailable = addClass('move-available')
 const getData = ev => JSON.parse(ev.dataTransfer.getData('text/plain'))
 const setData = (ev, data) => ev.dataTransfer.setData('text/plain', JSON.stringify(data))
 
@@ -67,19 +77,18 @@ const deletePiece = slug => document.getElementById(slug).remove()
 
 const updatePiece = update => document.getElementById(update.position).appendChild(document.getElementById(update.slug))
 
-const createPiece = piece => drawPieceEl(piece.position, createPieceEl(piece.color, piece.type, piece.id)) // To refactor
-
-  // matrix
-const drawMatrix = _.compose(_.forEach(createPiece), _.reject(_.isNil), _.flatten)
+const drawMatrix = matrix => {
+  M.forEachPosition(drawPiece, matrix)
+}
 
 function showPossibleMoves (possibleMoves) {
-
+  _.forEach(position => {
+    setMoveAvailable(document.getElementById(position))
+  }, _.map(_.path(['update', 'position']), possibleMoves))
 }
 
 module.exports = {
-  createPiece,
-  drawPieceEl,
-  setDraggableAt,
+  setDraggable,
   getSquaresEl,
   clearLastMove,
   addListener,

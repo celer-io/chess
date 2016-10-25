@@ -52,15 +52,6 @@ const applyMove = (matrix, move, origin) => {
   return update(_.reduce(remove, matrix, deletes), origin, destination)
 }
 
-// const transformMove = _.curry((origin, move) => {
-//   if (!transform(origin, move.update)) return null
-//
-//   return {
-//     update: transform(origin, move.update),
-//     deletes: _.map(transform(origin), move.deletes)
-//   }
-// })
-
 const letterToY = { a: 0, b: 1, c: 2, d: 3, e: 4, f: 5, g: 6, h: 7 }
 
 // TODO: memoize
@@ -78,6 +69,16 @@ const position = coords => _.concat(
   _.subtract(8, _.prop('x', coords))
 )
 
+const forEachPosition = (fn, matrix) => {
+  const forEachIndexed = _.addIndex(_.forEach)
+  forEachIndexed((ys, x) => {
+    forEachIndexed((piece, y) => {
+      const idx = position({x, y})
+      if (piece) fn(idx, piece)
+    }, ys)
+  }, matrix)
+}
+
   // matrix
 const getWhites = _.compose(_.filter(_.propEq('color', 'white')), _.reject(_.isNil), _.flatten)
 
@@ -91,5 +92,6 @@ module.exports = {
   coords,
   anyPieceAfterTransform,
   applyMove,
-  getWhites
+  getWhites,
+  forEachPosition
 }

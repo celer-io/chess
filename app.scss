@@ -1,3 +1,10 @@
+$darkgrey: #a6a6a6; //white 65%
+$lightgrey: #d9d9d9; //white 85%
+$darkblue: #4d88ff;
+$lightblue: #b3ccff;
+$darkgreen: #4dff88;
+$lightgreen: #b3ffcc;
+
 .clearfix {
 	clear: both;
 }
@@ -9,23 +16,17 @@
 		height: 50px;
 
 		&:nth-of-type(odd) {
-			background-color: lightgrey;
+			background-color: $lightgrey;
+			&.move-source {	background-color: $lightblue; }
+			&.move-available { background-color: $lightgreen; }
+			&.move-target { background-color: $lightblue; }
 		}
 
 		&:nth-of-type(even) {
-			background-color: darkgrey;
-		}
-
-		&.move-source {
-			background-color: blue;
-		}
-
-		&.move-target {
-			background-color: blue;
-		}
-
-		&.move-available {
-			background-color: green;
+			background-color: $darkgrey;
+			&.move-source {	background-color: $darkblue; }
+			&.move-available { background-color: $darkgreen; }
+			&.move-target { background-color: $darkblue; }
 		}
 	}
 
