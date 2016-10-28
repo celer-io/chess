@@ -2,6 +2,11 @@
 const _ = require('ramda')
 const M = require('./utils/matrix')
 
+const trace = _.curry((tag, x) => {
+  console.log(tag, x)
+  return x
+})
+
 const emptyMatrix = [ // TODO: codegolf !
   new Array(8),
   new Array(8),
@@ -52,16 +57,6 @@ const toDiag = (xs, ys) => {
   }
   return _.times(idx => coordsOf(xs[idx], ys[idx]), xs.length)
 }
-
-//      y0 y1 y2 y3 y4 y5 y6 y7
-// x0 [[a8,b8,c8,d8,e8,f8,g8,h8],
-// x1  [a7,b7,c7,d7,e7,f7,g7,h7],
-// x2  [a6,b6,c6,d6,e6,f6,g6,h6],
-// x3  [a5,b5,c5,d5,e5,f5,g5,h5],
-// x4  [a4,b4,c4,d4,e4,f4,g4,h4],
-// x5  [a3,b3,c3,d3,e3,f3,g3,h3],
-// x6  [a2,b2,c2,d2,e2,f2,g2,h2],
-// x7  [a1,b1,c1,d1,e1,f1,g1,h1]]
 
 // TODO: Handle en passant and elevation...
 const whitePawnMoves = (matrix, coords) => {
@@ -174,6 +169,65 @@ const queenMoves = (matrix, coords) => _.concat(
   bishopMoves(matrix, coords)
 )
 
+//      y0 y1 y2 y3 y4 y5 y6 y7
+// x0 [[a8,b8,c8,d8,e8,f8,g8,h8],
+// x1  [a7,b7,c7,d7,e7,f7,g7,h7],
+// x2  [a6,b6,c6,d6,e6,f6,g6,h6],
+// x3  [a5,b5,c5,d5,e5,f5,g5,h5],
+// x4  [a4,b4,c4,d4,e4,f4,g4,h4],
+// x5  [a3,b3,c3,d3,e3,f3,g3,h3],
+// x6  [a2,b2,c2,d2,e2,f2,g2,h2],
+// x7  [a1,b1,c1,d1,e1,f1,g1,h1]]
+
+const concatDeletes = (deletes, piece) => {
+  // return _.concat(_.reject(_.isEmpty, _.map(_.prop('deletes'), movesOf(piece))), deletes)
+  console.log('piece :', piece)
+
+  return _.compose(_.concat(deletes), trace('reject empty'), _.reject(_.isEmpty), trace('mapPropDelete'), _.map(_.prop('deletes')), trace('movesOf'), movesOf)(piece)
+}
+
+const kingMoves = (matrix, coords, oponentColor) => {
+  const oponentPieces = M.findByColor(oponentColor, matrix)
+  const oponentDeletes = _.reduce(concatDeletes, [], oponentPieces)
+  console.log('oponentPieces :', oponentPieces)
+  console.log('oponentDeletes :', oponentDeletes)
+
+  const transformations = [
+    coordsOf(0, 1),
+    coordsOf(0, -1),
+    coordsOf(1, 0),
+    coordsOf(-1, 0),
+    coordsOf(1, 1),
+    coordsOf(-1, -1),
+    coordsOf(1, -1),
+    coordsOf(-1, 1)
+  ]
+
+  const possibles = possiblesOf(coords)(transformations)
+  const isOponent = areOponents(M.get(matrix, coords))
+
+  const appendMove = (moves, possible) => {
+    console.log('possible :', possible)
+    if (_.any(_.equals(possible), oponentDeletes)) return moves
+
+    const piece = M.get(matrix, possible)
+    if (!piece) return _.append({update: possible, deletes: []}, moves)
+    if (isOponent(piece)) return _.append({update: possible, deletes: [possible]}, moves)
+
+    return moves
+  }
+
+  return _.reduce(appendMove, [], possibles)
+}
+
+const whiteKingMoves = (matrix, coords) => {
+  return kingMoves(matrix, coords, 'black')
+}
+
+const blackKingMoves = (matrix, coords, color) => {
+  return kingMoves(matrix, coords, 'white')
+}
+
 const armyMoves = {
   classic: {
     white: {
@@ -181,14 +235,16 @@ const armyMoves = {
       knight: knightMoves,
       rook: rookMoves,
       bishop: bishopMoves,
-      queen: queenMoves
+      queen: queenMoves,
+      king: whiteKingMoves
     },
     black: {
       pawn: blackPawnMoves,
       knight: knightMoves,
       rook: rookMoves,
       bishop: bishopMoves,
-      queen: queenMoves
+      queen: queenMoves,
+      king: blackKingMoves
     }
   }
 }

@@ -69,18 +69,46 @@ const position = coords => _.concat(
   _.subtract(8, _.prop('x', coords))
 )
 
-const forEachPosition = (fn, matrix) => {
-  const forEachIndexed = _.addIndex(_.forEach)
-  forEachIndexed((ys, x) => {
-    forEachIndexed((piece, y) => {
-      const idx = position({x, y})
-      if (piece) fn(idx, piece)
-    }, ys)
+/*
+Iterate over an input matrix, calling a provided function fn for each element in the matrix.
+Does not skip unasigned.
+fn receives two arguments: (piece, coords).
+*/
+const forEach = (fn, matrix) => {
+  for (let x = 0; x < matrix.length; x++) {
+    for (let y = 0; y < matrix[x].length; y++) {
+      fn(matrix[x][y], {x, y})
+    }
+  }
+}
+
+/*
+Iterate over an input matrix, calling a provided function fn for each element in the matrix.
+Does skip unasigned.
+fn receives two arguments: (piece, position).
+*/
+const forEachByPosition = (fn, matrix) => {
+  forEach((piece, coords) => {
+    if (piece) fn(piece, position(coords))
   }, matrix)
 }
 
-  // matrix
-const getWhites = _.compose(_.filter(_.propEq('color', 'white')), _.reject(_.isNil), _.flatten)
+const findByColor = _.curry((color, matrix) => {
+  return _.compose(_.filter(_.propEq('color', color)), _.reject(_.isNil), _.flatten)(matrix)
+})
+
+const findWhites = findByColor('white')
+const findBlacks = findByColor('black')
+
+const findCoords = (matrix, piece) => {
+  forEachCoord()
+}
+
+// const indexByCoords = (matrix, set) => {
+//   // TODO: ...
+// }
+//
+// console.log('indexByCoords :', indexByCoords)
 
 module.exports = {
   set,
@@ -92,6 +120,9 @@ module.exports = {
   coords,
   anyPieceAfterTransform,
   applyMove,
-  getWhites,
-  forEachPosition
+  findByColor,
+  findWhites,
+  findBlacks,
+  forEachByPosition,
+  findCoords
 }

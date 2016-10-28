@@ -29,7 +29,7 @@ function createPieceEl (color, type, id) {
   return piece
 }
 
-function drawPiece (position, piece) {
+function drawPiece (piece, position) {
   const pieceEl = createPieceEl(piece.color, piece.type, piece.id)
   return document.getElementById(position).appendChild(pieceEl)
 }
@@ -40,6 +40,10 @@ function drawPiece (position, piece) {
 
 function getSquaresEl () {
   return Array.from(document.getElementsByClassName('square'))
+}
+
+function getSquareEl (position) {
+  return document.getElementById(position)
 }
 
 function clearLastMove () {
@@ -83,9 +87,14 @@ const drawMatrix = matrix => {
 
 function showPossibleMoves (possibleMoves) {
   _.forEach(position => {
-    setMoveAvailable(document.getElementById(position))
+    setMoveAvailable(getSquareEl(position))
   }, _.map(_.path(['update', 'position']), possibleMoves))
 }
+
+// const showPossibleMoves = _.compose(
+//   _.forEach(_.compose(setMoveAvailable, getSquareEl)),
+//   _.map(_.path(['update', 'position']))
+// )
 
 module.exports = {
   setDraggable,

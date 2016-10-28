@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const setWhiteArmyDraggable = (matrix) => _.compose(
     _.forEach(Board.setDraggable(onPieceDragStart)),
-    M.getWhites
+    M.findWhites
   )(matrix)
 
   const onSquareDragOver = ev => ev.preventDefault()
