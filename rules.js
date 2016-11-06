@@ -7,16 +7,16 @@ const trace = _.curry((tag, x) => {
   return x
 })
 
-const emptyMatrix = [ // TODO: codegolf !
-  new Array(8),
-  new Array(8),
-  new Array(8),
-  new Array(8),
-  new Array(8),
-  new Array(8),
-  new Array(8),
-  new Array(8)
-]
+// const emptyMatrix = [ // TODO: codegolf !
+//   new Array(8),
+//   new Array(8),
+//   new Array(8),
+//   new Array(8),
+//   new Array(8),
+//   new Array(8),
+//   new Array(8),
+//   new Array(8)
+// ]
 
 const add1 = _.add(1)
 const coordsOf = _.curry((x, y) => ({x, y}))
@@ -181,16 +181,14 @@ const queenMoves = (matrix, coords) => _.concat(
 
 const concatDeletes = (deletes, piece) => {
   // return _.concat(_.reject(_.isEmpty, _.map(_.prop('deletes'), movesOf(piece))), deletes)
-  console.log('piece :', piece)
-
-  return _.compose(_.concat(deletes), trace('reject empty'), _.reject(_.isEmpty), trace('mapPropDelete'), _.map(_.prop('deletes')), trace('movesOf'), movesOf)(piece)
+  console.warn('FIXME !')
+  // return _.compose(_.concat(deletes), trace('reject empty'), _.reject(_.isEmpty), trace('mapPropDelete'), _.map(_.prop('deletes')), trace('movesOf'), movesOf)(piece)
+  return _.compose(_.concat(deletes), _.reject(_.isEmpty), _.map(_.prop('deletes')), movesOf)(piece)
 }
 
 const kingMoves = (matrix, coords, oponentColor) => {
   const oponentPieces = M.findByColor(oponentColor, matrix)
   const oponentDeletes = _.reduce(concatDeletes, [], oponentPieces)
-  console.log('oponentPieces :', oponentPieces)
-  console.log('oponentDeletes :', oponentDeletes)
 
   const transformations = [
     coordsOf(0, 1),
@@ -207,7 +205,6 @@ const kingMoves = (matrix, coords, oponentColor) => {
   const isOponent = areOponents(M.get(matrix, coords))
 
   const appendMove = (moves, possible) => {
-    console.log('possible :', possible)
     if (_.any(_.equals(possible), oponentDeletes)) return moves
 
     const piece = M.get(matrix, possible)
@@ -257,7 +254,7 @@ const movesOf = (piece) => {
 const toInstructions = _.curry((matrix, origin, move) => {
   const slugAt = _.curry((matrix, coords) => getSlug(M.get(matrix, coords)))
   // TODO: replace with lenses ? meh...
-  const update = _.prop('update', move)
+  const update = _.prop('update', move) // TODO: clean code with equational reasoning
   const deletes = _.prop('deletes', move)
 
   return {
@@ -265,10 +262,11 @@ const toInstructions = _.curry((matrix, origin, move) => {
     animation: null,
     update: {
       position: M.position(update),
+      coords: update,
       slug: slugAt(matrix, origin)
     },
     deletes: _.unless(_.isEmpty, _.map(slugAt(matrix)))(deletes),
-    newMatrix: M.applyMove(matrix, move, origin)
+    matrix: M.applyMove(matrix, move, origin) // calculation of new state ?
   }
 })
 
@@ -291,55 +289,7 @@ const getPossibleMoves = (matrix, originPosition) => {
   return _.map(toInstructions(matrix, origin), moves)
 }
 
-const gameOf = (blackArmyType, whiteArmyType) => {
-  // TODO: use coords for position
-  const initialSet = [
-    {type: 'king', id: '', color: 'white', armyType: 'classic', position: 'e1'},
-    {type: 'queen', id: '', color: 'white', armyType: 'classic', position: 'd1'},
-    {type: 'rook', id: '1', color: 'white', armyType: 'classic', position: 'a1'},
-    {type: 'rook', id: '2', color: 'white', armyType: 'classic', position: 'h1'},
-    {type: 'bishop', id: '1', color: 'white', armyType: 'classic', position: 'c1'},
-    {type: 'bishop', id: '2', color: 'white', armyType: 'classic', position: 'f1'},
-    {type: 'knight', id: '1', color: 'white', armyType: 'classic', position: 'b1'},
-    {type: 'knight', id: '2', color: 'white', armyType: 'classic', position: 'g1'},
-    {type: 'pawn', id: '1', color: 'white', armyType: 'classic', position: 'a2'},
-    {type: 'pawn', id: '2', color: 'white', armyType: 'classic', position: 'b2'},
-    {type: 'pawn', id: '3', color: 'white', armyType: 'classic', position: 'c2'},
-    {type: 'pawn', id: '4', color: 'white', armyType: 'classic', position: 'd2'},
-    {type: 'pawn', id: '5', color: 'white', armyType: 'classic', position: 'e2'},
-    {type: 'pawn', id: '6', color: 'white', armyType: 'classic', position: 'f2'},
-    {type: 'pawn', id: '7', color: 'white', armyType: 'classic', position: 'g2'},
-    {type: 'pawn', id: '8', color: 'white', armyType: 'classic', position: 'h2'},
-
-    {type: 'king', id: '', color: 'black', armyType: 'classic', position: 'e8'},
-    {type: 'queen', id: '', color: 'black', armyType: 'classic', position: 'd8'},
-    {type: 'rook', id: '1', color: 'black', armyType: 'classic', position: 'a8'},
-    {type: 'rook', id: '2', color: 'black', armyType: 'classic', position: 'h8'},
-    {type: 'bishop', id: '1', color: 'black', armyType: 'classic', position: 'c8'},
-    {type: 'bishop', id: '2', color: 'black', armyType: 'classic', position: 'f8'},
-    {type: 'knight', id: '1', color: 'black', armyType: 'classic', position: 'b8'},
-    {type: 'knight', id: '2', color: 'black', armyType: 'classic', position: 'g8'},
-    {type: 'pawn', id: '1', color: 'black', armyType: 'classic', position: 'a7'},
-    {type: 'pawn', id: '2', color: 'black', armyType: 'classic', position: 'b7'},
-    {type: 'pawn', id: '3', color: 'black', armyType: 'classic', position: 'c7'},
-    {type: 'pawn', id: '4', color: 'black', armyType: 'classic', position: 'd7'},
-    {type: 'pawn', id: '5', color: 'black', armyType: 'classic', position: 'e7'},
-    {type: 'pawn', id: '6', color: 'black', armyType: 'classic', position: 'f7'},
-    {type: 'pawn', id: '7', color: 'black', armyType: 'classic', position: 'g7'},
-    {type: 'pawn', id: '8', color: 'black', armyType: 'classic', position: 'h7'}
-  ]
-
-  const appendPiece = (matrix, piece) => {
-    return M.set(matrix, M.coords(piece.position), _.omit(['position'], piece))
-  }
-
-  return {
-    matrix: _.reduce(appendPiece, emptyMatrix, initialSet)
-  }
-}
-
 module.exports = {
   getMoveInstructions,
-  getPossibleMoves,
-  gameOf
+  getPossibleMoves
 }

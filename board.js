@@ -1,6 +1,10 @@
 'use strict'
 const _ = require('ramda')
 const M = require('./utils/matrix')
+// const trace = _.curry((tag, x) => {
+//   console.log(tag, x)
+//   return x
+// })
 
 // function setDraggableAt (position) {
 //   getPieceEl(position).setAttribute('draggable', true)
@@ -9,12 +13,30 @@ const M = require('./utils/matrix')
 
 const getSlug = piece => piece.color + piece.type + piece.id
 
-const setDraggable = _.curry((handler, piece) => {
+function getPieceEl (piece) {
   const slug = getSlug(piece)
-  const pieceEl = document.getElementById(slug)
+  return document.getElementById(slug)
+}
+
+const setDraggable = _.curry((handler, piece) => {
+  const pieceEl = getPieceEl(piece)
   pieceEl.setAttribute('draggable', true)
   addListener('dragstart', handler, pieceEl)
   return pieceEl
+})
+
+const unSetDraggable = (piece) => {
+  const pieceEl = getPieceEl(piece)
+  pieceEl.setAttribute('draggable', false)
+  return pieceEl
+}
+
+const unSetDraggables = (pieces) => {
+  _.forEach(unSetDraggable, pieces)
+}
+
+const setDraggables = _.curry((handler, pieces) => {
+  _.forEach(setDraggable(handler), pieces)
 })
 
 // function removePiece (position) {
@@ -34,27 +56,16 @@ function drawPiece (piece, position) {
   return document.getElementById(position).appendChild(pieceEl)
 }
 
-// function getPieceEl (position) {
-//   return document.getElementById(position).firstChild
-// }
-
 function getSquaresEl () {
-  return Array.from(document.getElementsByClassName('square'))
+  return getByClass('square')
 }
 
-function getSquareEl (position) {
+const getSquareEl = (position) => {
   return document.getElementById(position)
 }
 
-function clearLastMove () {
-  const moveClasses = ['move-target', 'move-source', 'move-available']
-
-  moveClasses.forEach((moveClass) => {
-    Array.from(document.getElementsByClassName(moveClass))
-    .forEach((squareEl) => {
-      squareEl.classList.remove(moveClass)
-    })
-  })
+function getByClass (className) {
+  return Array.from(document.getElementsByClassName(className))
 }
 
 const addListener = _.curry((eventName, handler, element) => element.addEventListener(eventName, handler, true))
@@ -69,6 +80,15 @@ const setMoveAvailable = addClass('move-available')
 const getData = ev => JSON.parse(ev.dataTransfer.getData('text/plain'))
 const setData = (ev, data) => ev.dataTransfer.setData('text/plain', JSON.stringify(data))
 
+const clearMoves = (moveClasses) => {
+  moveClasses = moveClasses || ['move-target', 'move-source', 'move-available']
+  _.forEach(className => {
+    _.forEach(removeClass(className), getByClass(className))
+  }, moveClasses)
+}
+
+const clearAvailableMoves = () => clearMoves(['move-available'])
+
 const niceDragImage = ev => {
     // TODO: for nice drag and drop in chrome
   var img = ev.currentTarget.cloneNode()
@@ -82,24 +102,40 @@ const deletePiece = slug => document.getElementById(slug).remove()
 const updatePiece = update => document.getElementById(update.position).appendChild(document.getElementById(update.slug))
 
 const drawMatrix = matrix => {
-  M.forEachPosition(drawPiece, matrix)
+  M.forEachByPosition(drawPiece, matrix)
 }
 
-function showPossibleMoves (possibleMoves) {
+const showPossibleMoves = (possibleMoves) => {
   _.forEach(position => {
-    setMoveAvailable(getSquareEl(position))
+    setMoveAvailable(document.getElementById(position))
   }, _.map(_.path(['update', 'position']), possibleMoves))
 }
 
-// const showPossibleMoves = _.compose(
-//   _.forEach(_.compose(setMoveAvailable, getSquareEl)),
-//   _.map(_.path(['update', 'position']))
-// )
+const drawInstructions = (instructions) => {
+  updatePiece(instructions.update)
+  _.forEach(deletePiece, instructions.deletes)
+}
+
+const clearDraggables = (matrix) => _.compose(unSetDraggables, M.findAll)(matrix)
+
+const setWhiteArmyDraggable = (matrix, handler) => _.compose(setDraggables(handler), M.findWhites)(matrix)
+
+const setBlackArmyDraggable = (matrix, handler) => _.compose(setDraggables(handler), M.findBlacks)(matrix)
+
+const setSquaresHandlers = (handlers) => {
+  _.forEach((square) => {
+    addListener('dragover', handlers.onSquareDragOver, square)
+    // Board.addListener('dragenter', onSquareDragEnter, square)
+    addListener('dragleave', handlers.onSquareDragLeave, square)
+    addListener('drop', handlers.onSquareDrop, square)
+  }, getSquaresEl())
+}
 
 module.exports = {
   setDraggable,
   getSquaresEl,
-  clearLastMove,
+  clearMoves,
+  clearAvailableMoves,
   addListener,
   setMoveTarget,
   unSetMoveTarget,
@@ -110,5 +146,12 @@ module.exports = {
   deletePiece,
   updatePiece,
   drawMatrix,
-  showPossibleMoves
+  showPossibleMoves,
+  // getSquareEl,
+  drawInstructions,
+  setWhiteArmyDraggable,
+  setBlackArmyDraggable,
+  setSquaresHandlers,
+  getSquareEl,
+  clearDraggables
 }

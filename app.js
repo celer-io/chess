@@ -1,8 +1,9 @@
 'use strict'
 const Board = require('./board')
-const M = require('./utils/matrix')
 const Rules = require('./rules')
-const _ = require('ramda')
+const Game = require('./game')
+// const _ = require('ramda')
+// const M = require('./utils/matrix')
 
 // const trace = _.curry((tag, x) => {
 //   console.log(tag, x)
@@ -10,69 +11,70 @@ const _ = require('ramda')
 // })
 
 document.addEventListener('DOMContentLoaded', () => {
-  const game = Rules.gameOf('classic', 'classic')
-
-  const handleInstructions = instructions => {
-    if (instructions.error) return console.warn(instructions.error)
-
-    game.matrix = instructions.newMatrix    // Unsafe
-
-    Board.updatePiece(instructions.update)
-    _.forEach(Board.deletePiece, instructions.deletes)
-  }
+  let game = Game.of('classic', 'classic') // Variables lives freely into the game ui loop :)
 
   const onSquareDrop = ev => {
     ev.preventDefault()
     const origin = Board.getData(ev)
-    const destination = ev.target.classList.contains('piece') ? ev.target.parentNode.id : ev.target.id
+    const squareTarget = ev.target.classList.contains('piece') ? ev.target.parentNode : ev.target
+    Board.clearAvailableMoves()
+
+    const destination = squareTarget.id
     const instructions = Rules.getMoveInstructions(game.matrix, origin, destination)
+
+    if (!instructions.error) { // TODO: move into instructions handling
+      Board.setMoveTarget(squareTarget)
+      Board.setMoveSource(Board.getSquareEl(origin))
+    }
+
     handleInstructions(instructions)
   }
 
   const onPieceDragStart = ev => {
-    Board.clearLastMove()
+    Board.clearMoves()
     const position = ev.currentTarget.parentNode.id
     Board.showPossibleMoves(Rules.getPossibleMoves(game.matrix, position))
     Board.setData(ev, position)
-    Board.setMoveSource(ev.currentTarget.parentNode)
     // Board.niceDragImage(ev)
   }
 
-  // const setDraggable = _.compose(
-  //   Board.addListener('dragstart', onPieceDragStart),
-  //   Board.setDraggable
-  // )
-
-  const setWhiteArmyDraggable = (matrix) => _.compose(
-    _.forEach(Board.setDraggable(onPieceDragStart)),
-    M.findWhites
-  )(matrix)
-
   const onSquareDragOver = ev => ev.preventDefault()
-  const onSquareDragEnter = ev => {
-    if (!ev.target.classList.contains('piece')) {
-      Board.setMoveTarget(ev.target)
+  // const onSquareDragEnter = ev => {
+  //   Board.setMoveTarget(ev.target)
+  // }
+
+  const print = (game, instructions) => {
+    if (instructions.error) {
+      return console.warn(instructions.error)
     }
+
+    Board.drawInstructions(instructions)
+
+    if (game.state === 'white_turn') {
+      Board.clearDraggables(game.matrix)
+      Board.setWhiteArmyDraggable(game.matrix, onPieceDragStart)
+    } else if (game.state === 'black_turn') {
+      Board.clearDraggables(game.matrix)
+      Board.setBlackArmyDraggable(game.matrix, onPieceDragStart)
+    }
+
+    // TODO: display state on dashboard (and handle animations...)
+    // Dashboard.print(game)
+  }
+
+  const handleInstructions = instructions => {
+    game = Game.nextState(game, instructions)
+    print(game, instructions)
   }
 
   const onSquareDragLeave = ev => Board.unSetMoveTarget(ev.target)
 
-  // const onPieceDragLeave = ev => unSetMoveTarget(ev.target.parentNode)
-
   Board.drawMatrix(game.matrix)
-  // const setDraggable = _.compose(
-  //   Board.addListener('dragstart', onPieceDragStart),
-  //   Board.setDraggable
-  // )
 
-  // const setWhiteArmyDraggable = _.compose(_.forEach(setDraggable), M.getWhites)
-
-  setWhiteArmyDraggable(game.matrix)
-
-  _.forEach((square) => {
-    Board.addListener('dragover', onSquareDragOver, square)
-    Board.addListener('dragenter', onSquareDragEnter, square)
-    Board.addListener('dragleave', onSquareDragLeave, square)
-    Board.addListener('drop', onSquareDrop, square)
-  }, Board.getSquaresEl())
+  Board.setWhiteArmyDraggable(game.matrix, onPieceDragStart)
+  Board.setSquaresHandlers({
+    onSquareDragOver,
+    onSquareDragLeave,
+    onSquareDrop
+  })
 })

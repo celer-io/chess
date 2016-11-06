@@ -10,23 +10,23 @@ An attempt to build a chess game engine in web technologies that implements the 
 
 #### States definition
 
-- **S** 		: Start
-- **P1T** 	: Player 1 turn
-- **P2T** 	: Player 2 turn
-- **P1D** 	: Duel initiated by Player 1
-- **P2D** 	: Duel initiated by Player 2
-- **P1KT** 	: Player 1 king turn if his army is of type Two kings
-- **P2KT** 	: Player 2 king turn if his army is of type Two kings
-- **P1W** 	: Player 1 has won
-- **P2W** 	: Player 2 has won
+<!-- - **S** 		: Start -->
+- **P1T** 	: White player turn
+- **P2T** 	: Black player turn
+- **P1D** 	: Duel initiated by White player
+- **P2D** 	: Duel initiated by Black player
+- **P1KT** 	: White player king turn if his army is of type Two kings
+- **P2KT** 	: Black player king turn if his army is of type Two kings
+- **P1W** 	: White player has won
+- **P2W** 	: Black player has won
 - **PAT** 	: (aka: Stalemate) Player whose turn it is to move is not in check but has no legal move
 
 ## Roadmap
 
 - [x] Display possible moves on board
-- [ ] Create simple game automata: Allow player one to play white then player 2 black...
+- [X] Create simple game automata: Allow player one to play white then Black player...
 - [ ] Refactor event handling to FSM
-- [ ] Move black pieces
+- [X] Move black pieces
 - [ ] Implement 'has won' rule
 - [ ] Handle dueling
 - [ ] Handle end of game

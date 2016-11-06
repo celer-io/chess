@@ -97,12 +97,16 @@ const findByColor = _.curry((color, matrix) => {
   return _.compose(_.filter(_.propEq('color', color)), _.reject(_.isNil), _.flatten)(matrix)
 })
 
+const findAll = (matrix) => {
+  return _.compose(_.reject(_.isNil), _.flatten)(matrix)
+}
+
 const findWhites = findByColor('white')
 const findBlacks = findByColor('black')
 
-const findCoords = (matrix, piece) => {
-  forEachCoord()
-}
+// const findCoords = (matrix, piece) => {
+//   forEachCoord()
+// }
 
 // const indexByCoords = (matrix, set) => {
 //   // TODO: ...
@@ -124,5 +128,5 @@ module.exports = {
   findWhites,
   findBlacks,
   forEachByPosition,
-  findCoords
+  findAll
 }
