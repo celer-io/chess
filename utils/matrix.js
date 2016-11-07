@@ -20,19 +20,19 @@ const update = (matrix, origin, destination) => {
   return remove(set(matrix, destination, get(matrix, origin)), origin)
 }
 
-const pieceAfterTransform = (matrix, origin, transformation) => {
-  const transformed = transform(origin, transformation)
-  if (!transformed) return null
+// const pieceAfterTransform = (matrix, origin, transformation) => {
+//   const transformed = transform(origin, transformation)
+//   if (!transformed) return null
+//
+//   return get(matrix, transformed)
+// }
 
-  return get(matrix, transformed)
-}
-
-const anyPieceAfterTransform = _.curry((matrix, origin, transformation) => {
-  const piece = pieceAfterTransform(matrix, origin, transformation)
-  if (!piece) return false
-
-  return true
-})
+// const anyPieceAfterTransform = _.curry((matrix, origin, transformation) => {
+//   const piece = pieceAfterTransform(matrix, origin, transformation)
+//   if (!piece) return false
+//
+//   return true
+// })
 
 // TODO: memoize ?
 // applies relative coords(transformation) to origin coords
@@ -104,15 +104,17 @@ const findAll = (matrix) => {
 const findWhites = findByColor('white')
 const findBlacks = findByColor('black')
 
-// const findCoords = (matrix, piece) => {
-//   forEachCoord()
-// }
+const findByColorIndexed = _.curry((color, matrix) => {
+  return _.compose(_.filter(_.pathEq(['piece', 'color'], color)), indexByCoords)(matrix)
+})
 
-// const indexByCoords = (matrix, set) => {
-//   // TODO: ...
-// }
-//
-// console.log('indexByCoords :', indexByCoords)
+const indexByCoords = (matrix) => {
+  let ret = []
+  forEach((piece, coords) => {
+    if (piece) ret = _.append({coords, piece}, ret)
+  }, matrix)
+  return ret
+}
 
 module.exports = {
   set,
@@ -122,11 +124,11 @@ module.exports = {
   update,
   position,
   coords,
-  anyPieceAfterTransform,
   applyMove,
   findByColor,
   findWhites,
   findBlacks,
   forEachByPosition,
-  findAll
+  findAll,
+  findByColorIndexed
 }

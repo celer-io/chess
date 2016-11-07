@@ -50,11 +50,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     Board.drawInstructions(instructions)
 
+    // Board.clearDraggables(game.matrix) // XXX : commented for development
     if (game.state === 'white_turn') {
-      Board.clearDraggables(game.matrix)
       Board.setWhiteArmyDraggable(game.matrix, onPieceDragStart)
     } else if (game.state === 'black_turn') {
-      Board.clearDraggables(game.matrix)
       Board.setBlackArmyDraggable(game.matrix, onPieceDragStart)
     }
 

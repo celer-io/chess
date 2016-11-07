@@ -2,21 +2,10 @@
 const _ = require('ramda')
 const M = require('./utils/matrix')
 
-const trace = _.curry((tag, x) => {
-  console.log(tag, x)
-  return x
-})
-
-// const emptyMatrix = [ // TODO: codegolf !
-//   new Array(8),
-//   new Array(8),
-//   new Array(8),
-//   new Array(8),
-//   new Array(8),
-//   new Array(8),
-//   new Array(8),
-//   new Array(8)
-// ]
+// const trace = _.curry((tag, x) => {
+//   console.log(tag, x)
+//   return x
+// })
 
 const add1 = _.add(1)
 const coordsOf = _.curry((x, y) => ({x, y}))
@@ -179,17 +168,17 @@ const queenMoves = (matrix, coords) => _.concat(
 // x6  [a2,b2,c2,d2,e2,f2,g2,h2],
 // x7  [a1,b1,c1,d1,e1,f1,g1,h1]]
 
-const concatDeletes = (deletes, piece) => {
-  // return _.concat(_.reject(_.isEmpty, _.map(_.prop('deletes'), movesOf(piece))), deletes)
-  console.warn('FIXME !')
-  // return _.compose(_.concat(deletes), trace('reject empty'), _.reject(_.isEmpty), trace('mapPropDelete'), _.map(_.prop('deletes')), trace('movesOf'), movesOf)(piece)
-  return _.compose(_.concat(deletes), _.reject(_.isEmpty), _.map(_.prop('deletes')), movesOf)(piece)
-}
+const concatDeletes = _.curry((matrix, deletes, pieceIndexed) => {
+  const moves = movesOf(matrix, pieceIndexed.piece, pieceIndexed.coords)
+  // TODO: fuckidly fuck, deletes are not populated !!! one solution could be to add a copy of the king in the matrix for every possible positons
+  return _.compose(
+    _.concat(deletes),
+    _.flatten,
+    _.map(_.prop('deletes'))
+  )(moves)
+})
 
 const kingMoves = (matrix, coords, oponentColor) => {
-  const oponentPieces = M.findByColor(oponentColor, matrix)
-  const oponentDeletes = _.reduce(concatDeletes, [], oponentPieces)
-
   const transformations = [
     coordsOf(0, 1),
     coordsOf(0, -1),
@@ -201,11 +190,15 @@ const kingMoves = (matrix, coords, oponentColor) => {
     coordsOf(-1, 1)
   ]
 
+  const oponentPiecesIndexed = _.reject(_.pathEq(['piece', 'type'], 'king'), M.findByColorIndexed(oponentColor, matrix))
+  // TODO:  create a projectionMatrix with
+  const forbiddenCoords = _.reduce(concatDeletes(matrix), [], oponentPiecesIndexed)
+
   const possibles = possiblesOf(coords)(transformations)
   const isOponent = areOponents(M.get(matrix, coords))
 
   const appendMove = (moves, possible) => {
-    if (_.any(_.equals(possible), oponentDeletes)) return moves
+    if (_.any(_.equals(possible), forbiddenCoords)) return moves
 
     const piece = M.get(matrix, possible)
     if (!piece) return _.append({update: possible, deletes: []}, moves)
@@ -221,7 +214,7 @@ const whiteKingMoves = (matrix, coords) => {
   return kingMoves(matrix, coords, 'black')
 }
 
-const blackKingMoves = (matrix, coords, color) => {
+const blackKingMoves = (matrix, coords) => {
   return kingMoves(matrix, coords, 'white')
 }
 
@@ -246,9 +239,8 @@ const armyMoves = {
   }
 }
 
-const movesOf = (piece) => {
-  return armyMoves[piece.armyType][piece.color][piece.type]
-  // return _.path([piece.armyType, piece.color, piece.type])(armyMoves)
+const movesOf = (matrix, piece, coords) => {
+  return armyMoves[piece.armyType][piece.color][piece.type](matrix, coords)
 }
 
 const toInstructions = _.curry((matrix, origin, move) => {
@@ -274,7 +266,7 @@ const getMoveInstructions = (matrix, originPosition, target) => {
   const origin = M.coords(originPosition)
   const destination = M.coords(target)
   const piece = M.get(matrix, origin)
-  const moves = movesOf(piece)(matrix, origin)
+  const moves = movesOf(matrix, piece, origin)
   // TODO: change _.prop('update') to someting more appropriate when possible move will not (only) be defined by update
   const move = _.find(_.propEq('update', destination), moves)
 
@@ -285,7 +277,7 @@ const getMoveInstructions = (matrix, originPosition, target) => {
 const getPossibleMoves = (matrix, originPosition) => {
   const origin = M.coords(originPosition)
   const piece = M.get(matrix, origin)
-  const moves = movesOf(piece)(matrix, origin)
+  const moves = movesOf(matrix, piece, origin)
   return _.map(toInstructions(matrix, origin), moves)
 }
 
