@@ -169,8 +169,7 @@ const queenMoves = (matrix, coords) => _.concat(
 // x7  [a1,b1,c1,d1,e1,f1,g1,h1]]
 
 const concatDeletes = _.curry((matrix, deletes, pieceIndexed) => {
-  const moves = movesOf(matrix, pieceIndexed.piece, pieceIndexed.coords)
-  // TODO: fuckidly fuck, deletes are not populated !!! one solution could be to add a copy of the king in the matrix for every possible positons
+  const moves = movesOf(matrix, pieceIndexed.piece, pieceIndexed.coords, false)
   return _.compose(
     _.concat(deletes),
     _.flatten,
@@ -178,9 +177,17 @@ const concatDeletes = _.curry((matrix, deletes, pieceIndexed) => {
   )(moves)
 })
 
-const kingMoves = (matrix, coords, oponentColor) => {
-  const king = M.get(matrix, coords)
+const isInCheck = (matrix, kingCoords, oponentColor) => {
+  const oponentPieces = M.findByColorIndexed(matrix, oponentColor)
+  // const filteredOponentPieces = _.reject(_.pathEq(['piece', 'type'], 'king'), oponentPieces)
+  // const oponentKing = _.find(_.pathEq(['piece', 'type'], 'king'), oponentPieces)
 
+  const oponentDeletes = _.reduce(concatDeletes(matrix), [], oponentPieces)
+
+  return _.any(_.equals(kingCoords), oponentDeletes)
+}
+
+const kingMoves = (matrix, coords, oponentColor, checkForbiddens) => {
   const transformations = [
     coordsOf(0, 1),
     coordsOf(0, -1),
@@ -192,19 +199,16 @@ const kingMoves = (matrix, coords, oponentColor) => {
     coordsOf(-1, 1)
   ]
 
-  const oponentPiecesIndexed = _.reject(_.pathEq(['piece', 'type'], 'king'), M.findByColorIndexed(oponentColor, matrix))
-
   const possibles = possiblesOf(coords)(transformations)
 
-  const appendKingCopy = (matrix, possible) => {
-    return M.set(matrix, possible, king)
+  const appendForbidden = (forbiddens, possible) => {
+    const possibleMatrix = M.update(matrix, coords, possible)
+    if (isInCheck(possibleMatrix, possible, oponentColor)) return _.append(possible, forbiddens)
+
+    return forbiddens
   }
 
-  const projectionMatrix = _.reduce(appendKingCopy, matrix, possibles)
-  // TODO: create a collection of possibleMatrix to prevent appendInDirection bug
-
-  const forbiddenCoords = _.reduce(concatDeletes(projectionMatrix), [], oponentPiecesIndexed)
-  console.log('forbiddenCoords :', forbiddenCoords)
+  const forbiddenCoords = checkForbiddens ? _.reduce(appendForbidden, [], possibles) : []
 
   const isOponent = areOponents(M.get(matrix, coords))
 
@@ -221,12 +225,12 @@ const kingMoves = (matrix, coords, oponentColor) => {
   return _.reduce(appendMove, [], possibles)
 }
 
-const whiteKingMoves = (matrix, coords) => {
-  return kingMoves(matrix, coords, 'black')
+const whiteKingMoves = (matrix, coords, checkForbiddens) => {
+  return kingMoves(matrix, coords, 'black', checkForbiddens)
 }
 
-const blackKingMoves = (matrix, coords) => {
-  return kingMoves(matrix, coords, 'white')
+const blackKingMoves = (matrix, coords, checkForbiddens) => {
+  return kingMoves(matrix, coords, 'white', checkForbiddens)
 }
 
 const armyMoves = {
@@ -250,8 +254,8 @@ const armyMoves = {
   }
 }
 
-const movesOf = (matrix, piece, coords) => {
-  return armyMoves[piece.armyType][piece.color][piece.type](matrix, coords)
+const movesOf = (matrix, piece, coords, checkForbiddens = true) => {
+  return armyMoves[piece.armyType][piece.color][piece.type](matrix, coords, checkForbiddens)
 }
 
 const toInstructions = _.curry((matrix, origin, move) => {

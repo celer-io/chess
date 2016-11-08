@@ -16,9 +16,10 @@ const set = _.curry((matrix, coords, piece) => _.set(lensCoords(coords), piece, 
 
 const remove = _.curry((matrix, coords) => _.set(lensCoords(coords), null, matrix))
 
-const update = (matrix, origin, destination) => {
+// const update = _.curry((matrix, origin, destination) => _.compose(remove(_._, origin), set(matrix, destination), get(matrix, origin))())
+const update = _.curry((matrix, origin, destination) => {
   return remove(set(matrix, destination, get(matrix, origin)), origin)
-}
+})
 
 // const pieceAfterTransform = (matrix, origin, transformation) => {
 //   const transformed = transform(origin, transformation)
@@ -104,9 +105,9 @@ const findAll = (matrix) => {
 const findWhites = findByColor('white')
 const findBlacks = findByColor('black')
 
-const findByColorIndexed = _.curry((color, matrix) => {
+const findByColorIndexed = (matrix, color) => {
   return _.compose(_.filter(_.pathEq(['piece', 'color'], color)), indexByCoords)(matrix)
-})
+}
 
 const indexByCoords = (matrix) => {
   let ret = []
