@@ -177,17 +177,17 @@ const concatDeletes = _.curry((matrix, deletes, pieceIndexed) => {
   )(moves)
 })
 
-const isInCheck = (matrix, kingCoords, oponentColor) => {
-  const oponentPieces = M.findByColorIndexed(matrix, oponentColor)
-  // const filteredOponentPieces = _.reject(_.pathEq(['piece', 'type'], 'king'), oponentPieces)
-  // const oponentKing = _.find(_.pathEq(['piece', 'type'], 'king'), oponentPieces)
+const oponentColor = (color) => color === 'white' ? 'black' : 'white'
 
+const isInCheck = (matrix, color) => {
+  const oponentPieces = M.findByColorIndexed(matrix, oponentColor(color))
+  const kingCoords = M.findKingCoords(matrix, color)
+  console.log('kingCoords :', kingCoords)
   const oponentDeletes = _.reduce(concatDeletes(matrix), [], oponentPieces)
-
   return _.any(_.equals(kingCoords), oponentDeletes)
 }
 
-const kingMoves = (matrix, coords, oponentColor, checkForbiddens) => {
+const kingMoves = (matrix, coords, color, checkForbiddens) => {
   const transformations = [
     coordsOf(0, 1),
     coordsOf(0, -1),
@@ -203,7 +203,9 @@ const kingMoves = (matrix, coords, oponentColor, checkForbiddens) => {
 
   const appendForbidden = (forbiddens, possible) => {
     const possibleMatrix = M.update(matrix, coords, possible)
-    if (isInCheck(possibleMatrix, possible, oponentColor)) return _.append(possible, forbiddens)
+    console.log('possible :', possible)
+    console.log('possibleMatrix :', possibleMatrix)
+    if (isInCheck(possibleMatrix, color)) return _.append(possible, forbiddens)
 
     return forbiddens
   }
@@ -226,11 +228,11 @@ const kingMoves = (matrix, coords, oponentColor, checkForbiddens) => {
 }
 
 const whiteKingMoves = (matrix, coords, checkForbiddens) => {
-  return kingMoves(matrix, coords, 'black', checkForbiddens)
+  return kingMoves(matrix, coords, 'white', checkForbiddens)
 }
 
 const blackKingMoves = (matrix, coords, checkForbiddens) => {
-  return kingMoves(matrix, coords, 'white', checkForbiddens)
+  return kingMoves(matrix, coords, 'black', checkForbiddens)
 }
 
 const armyMoves = {

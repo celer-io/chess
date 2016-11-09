@@ -117,6 +117,19 @@ const indexByCoords = (matrix) => {
   return ret
 }
 
+// const isKing = _.curry((color, piece))
+
+const findKingCoords = (matrix, color) => _.compose(
+  _.prop('coords'),
+  _.find(_.whereEq({
+    piece: {
+      color: color,
+      type: 'king'
+    }
+  })),
+  indexByCoords
+)(matrix)
+
 module.exports = {
   set,
   transform,
@@ -131,5 +144,6 @@ module.exports = {
   findBlacks,
   forEachByPosition,
   findAll,
-  findByColorIndexed
+  findByColorIndexed,
+  findKingCoords
 }
