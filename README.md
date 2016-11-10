@@ -29,6 +29,7 @@ An attempt to build a chess game engine in web technologies that implements the 
 - [X] Move black pieces
 - [X] Implement in check rule
 - [X] Rename captures to capture
+- [ ] Add nice matrix log
 - [ ] Implement in checkmate rule
 - [ ] Implement in stalemate rule
 - [ ] Implement 'has won' rule

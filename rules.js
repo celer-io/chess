@@ -177,23 +177,40 @@ const concatCaptures = _.curry((matrix, captures, pieceIndexed) => {
   )(moves)
 })
 
+const concatMatrices = _.curry((matrix, matrices, pieceIndexed) => {
+  const moves = movesOf(matrix, pieceIndexed.piece, pieceIndexed.coords, false)
+  return _.compose(
+    _.concat(matrices),
+    _.map(move => {
+      return M.update(matrix, pieceIndexed.coords, move.update)
+    })
+  )(moves)
+})
+
 const oponentColor = (color) => color === 'white' ? 'black' : 'white'
 
-const isInCheck = (matrix, color) => {
+const isInCheck = _.curry((matrix, color) => {
   const oponentPieces = M.findByColorIndexed(matrix, oponentColor(color))
   const kingCoords = M.findKingCoords(matrix, color)
   const oponentCaptures = _.reduce(concatCaptures(matrix), [], oponentPieces)
   return _.any(_.equals(kingCoords), oponentCaptures)
-}
+})
 
 // const isMat = (matrix, coords) => {
 //
 // }
 
-const isInCheckmate = (matrix, color) => {
-  // isInCheck(matrix, color) &&
+const possibleMatrices = (matrix, color) => {
   const ownPieces = M.findByColorIndexed(matrix, color)
+  return _.reduce(concatMatrices(matrix), [], ownPieces)
+}
 
+const isInCheckmate = (matrix, color) => {
+  const currenInCheck = isInCheck(matrix, color)
+  const possibleMatricesOut = _.reject(isInCheck(_.__, color), possibleMatrices(matrix, color))
+  console.log('possibleMatricesOut :', possibleMatricesOut)
+  // return  && _.none(!isInCheck(_.__, color), possibleMatrices(matrix, color))
+  return currenInCheck && _.isEmpty(possibleMatricesOut)
 }
 
 const kingMoves = (matrix, coords, color, checkForbiddens) => {

@@ -33,6 +33,9 @@ const nextState = (game, instructions) => {
   }
   if (Rules.isInCheck(matrix, _.view(lensPLayer, state))) {
     state = _.set(lensName, 'in_check', state)
+    if (Rules.isInCheckmate(matrix, _.view(lensPLayer, state))) {
+      state = _.set(lensName, 'in_checkmate', state)
+    }
   }
   // if (game.state === 'black_turn') {
   //   if (R.isInCheck(matrix, 'white')) state = black_check
