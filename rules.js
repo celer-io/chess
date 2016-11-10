@@ -186,8 +186,14 @@ const isInCheck = (matrix, color) => {
   return _.any(_.equals(kingCoords), oponentCaptures)
 }
 
+// const isMat = (matrix, coords) => {
+//
+// }
+
 const isInCheckmate = (matrix, color) => {
-// TODO:
+  // isInCheck(matrix, color) &&
+  const ownPieces = M.findByColorIndexed(matrix, color)
+
 }
 
 const kingMoves = (matrix, coords, color, checkForbiddens) => {
