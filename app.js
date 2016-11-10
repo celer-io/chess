@@ -2,7 +2,7 @@
 const Board = require('./board')
 const Rules = require('./rules')
 const Game = require('./game')
-// const _ = require('ramda')
+const _ = require('ramda')
 // const M = require('./utils/matrix')
 
 // const trace = _.curry((tag, x) => {
@@ -51,11 +51,24 @@ document.addEventListener('DOMContentLoaded', () => {
     Board.drawInstructions(instructions)
 
     // Board.clearDraggables(game.matrix) // XXX : commented for development
-    if (game.state === 'white_turn') {
-      Board.setWhiteArmyDraggable(game.matrix, onPieceDragStart)
-    } else if (game.state === 'black_turn') {
-      Board.setBlackArmyDraggable(game.matrix, onPieceDragStart)
+    const state = _.prop('state', game)
+
+    if (_.propEq('name', 'turn', state)) {
+      Board.setArmyDraggable(game.matrix, state.player, onPieceDragStart)
+    } else if (_.propEq('name', 'in_check', state)) {
+      console.warn(state.player + ' player is in check !')
+      Board.setArmyDraggable(game.matrix, state.player, onPieceDragStart)
+    } else if (_.propEq('name', 'in_checkmate', state)) {
+      console.warn(state.player + ' player is in checkmate !')
+      // Board.setArmyDraggable(game.matrix, state.player, onPieceDragStart)
+    } else if (_.propEq('name', 'in_stalemate', state)) {
+      console.warn(state.player + ' player is in stalemate !')
+      // Board.setArmyDraggable(game.matrix, state.player, onPieceDragStart)
     }
+    // if (game.state === 'white_turn') {
+    // } else if (game.state === 'black_turn') {
+    //   Board.setBlackArmyDraggable(game.matrix, onPieceDragStart)
+    // }
 
     // TODO: display state on dashboard (and handle animations...)
     // Dashboard.print(game)

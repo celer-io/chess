@@ -1,6 +1,7 @@
 'use strict'
 const _ = require('ramda')
 const M = require('./utils/matrix')
+const Rules = require('./rules')
 
 const emptyMatrix = [ // TODO: codegolf !
   new Array(8),
@@ -13,13 +14,37 @@ const emptyMatrix = [ // TODO: codegolf !
   new Array(8)
 ]
 
+const stateOf = _.curry((player, name) => ({player, name}))
+// state: {
+//   player: String, // white|black
+//   name: String  //turn|in_check|in_checkmate|in_stalemate|duel|king_turn|midline...
+// }
+const lensPLayer = _.lensProp('player')
+const lensName = _.lensProp('name')
 const nextState = (game, instructions) => {
-  if (instructions.error) return game
-  let state
-  let matrix = instructions.matrix
-  if (game.state === 'black_turn') state = 'white_turn'
-  if (game.state === 'white_turn') state = 'black_turn'
-  return {state, matrix}
+  if (_.prop('error', instructions)) return game
+
+  const oponent = Rules.oponentColor(_.path(['state', 'player'], game))
+  const matrix = _.prop('matrix', instructions)
+  let state = _.clone(_.prop('state', game))
+
+  if (_.propEq('name', 'turn', state)) {
+    state = _.set(lensPLayer, oponent, state)
+  }
+  if (Rules.isInCheck(matrix, _.view(lensPLayer, state))) {
+    state = _.set(lensName, 'in_check', state)
+  }
+  // if (game.state === 'black_turn') {
+  //   if (R.isInCheck(matrix, 'white')) state = black_check
+  //   state = 'white_turn'
+  // }
+  // if (game.state === 'white_turn') {
+  //   state = 'black_turn'
+  // }
+  return {
+    state,
+    matrix
+  }
 }
 
 const of = (blackArmyType, whiteArmyType) => {
@@ -65,7 +90,7 @@ const of = (blackArmyType, whiteArmyType) => {
   }
 
   return {
-    state: 'white_turn',
+    state: stateOf('white', 'turn'),
     matrix: _.reduce(appendPiece, emptyMatrix, initialSet)
   }
 }

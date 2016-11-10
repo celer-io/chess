@@ -27,6 +27,10 @@ An attempt to build a chess game engine in web technologies that implements the 
 - [X] Create simple game automata: Allow player one to play white then Black player...
 - [ ] Refactor event handling to FSM
 - [X] Move black pieces
+- [X] Implement in check rule
+- [X] Rename captures to capture
+- [ ] Implement in checkmate rule
+- [ ] Implement in stalemate rule
 - [ ] Implement 'has won' rule
 - [ ] Handle dueling
 - [ ] Handle end of game

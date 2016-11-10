@@ -48,9 +48,9 @@ const transform = _.curry((origin, transformation) => {
 
 const applyMove = (matrix, move, origin) => {
   const destination = _.prop('update', move)
-  const deletes = _.prop('deletes', move)
+  const captures = _.prop('captures', move)
 
-  return update(_.reduce(remove, matrix, deletes), origin, destination)
+  return update(_.reduce(remove, matrix, captures), origin, destination)
 }
 
 const letterToY = { a: 0, b: 1, c: 2, d: 3, e: 4, f: 5, g: 6, h: 7 }
@@ -105,10 +105,11 @@ const findAll = (matrix) => {
 const findWhites = findByColor('white')
 const findBlacks = findByColor('black')
 
-const findByColorIndexed = (matrix, color) => {
+const findByColorIndexed = _.curry((matrix, color) => {
   return _.compose(_.filter(_.pathEq(['piece', 'color'], color)), indexByCoords)(matrix)
-}
+})
 
+// TODO: memoize
 const indexByCoords = (matrix) => {
   let ret = []
   forEach((piece, coords) => {
@@ -117,18 +118,24 @@ const indexByCoords = (matrix) => {
   return ret
 }
 
-// const isKing = _.curry((color, piece))
+const isKing = _.curry((color, pieceIndexed) => _.whereEq({ type: 'king', color }, _.prop('piece', pieceIndexed)))
+
+// const trace = _.curry((tag, x) => {
+//   console.log(tag, x)
+//   return x
+// })
 
 const findKingCoords = (matrix, color) => _.compose(
   _.prop('coords'),
-  _.find(_.whereEq({
-    piece: {
-      color: color,
-      type: 'king'
-    }
-  })),
+  _.find(isKing(color)),
   indexByCoords
 )(matrix)
+
+// const findKingCoords = (matrix, color) => _.compose(
+//   _.prop('coords'),
+//   _.find(_.pathEq(['piece', 'type'], 'king'),
+//   findByColorIndexed(matrix, color)
+// ))()
 
 module.exports = {
   set,

@@ -26,14 +26,14 @@ const rangeDown = coord => {
   return _.reverse(_.range(0, coord))
 }
 
-const areOponents = _.curry((origin, piece) => {
-  return (isWhite(origin) && isBlack(piece)) || (isWhite(piece) && isBlack(origin))
+const areOponents = _.curry((piece1, piece2) => {
+  return (isWhite(piece1) && isBlack(piece2)) || (isWhite(piece2) && isBlack(piece1))
 })
 
 const appendInDirection = _.curry((matrix, isOponent, moves, possible) => {
   const piece = M.get(matrix, possible)
-  if (!piece) return _.append({update: possible, deletes: []}, moves)
-  if (isOponent(piece)) return _.reduced(_.append({ update: possible, deletes: [possible] }, moves))
+  if (!piece) return _.append({update: possible, captures: []}, moves)
+  if (isOponent(piece)) return _.reduced(_.append({ update: possible, captures: [possible] }, moves))
 
   return _.reduced(moves)
 })
@@ -74,13 +74,13 @@ const pawnMoves = (matrix, coords, sides, front) => {
 
   const appendSide = (moves, possible) => {
     const piece = M.get(matrix, possible)
-    if (piece && isOponent(piece)) return _.append({update: possible, deletes: [possible]}, moves)
+    if (piece && isOponent(piece)) return _.append({update: possible, captures: [possible]}, moves)
 
     return moves
   }
   const appendFront = (moves, possible) => {
     const piece = M.get(matrix, possible)
-    if (!piece) return _.append({update: possible, deletes: []}, moves)
+    if (!piece) return _.append({update: possible, captures: []}, moves)
 
     return _.reduced(moves)
   }
@@ -108,8 +108,8 @@ const knightMoves = (matrix, coords) => {
 
   const appendMove = (moves, possible) => {
     const piece = M.get(matrix, possible)
-    if (!piece) return _.append({update: possible, deletes: []}, moves)
-    if (isOponent(piece)) return _.append({update: possible, deletes: [possible]}, moves)
+    if (!piece) return _.append({update: possible, captures: []}, moves)
+    if (isOponent(piece)) return _.append({update: possible, captures: [possible]}, moves)
 
     return moves
   }
@@ -168,12 +168,12 @@ const queenMoves = (matrix, coords) => _.concat(
 // x6  [a2,b2,c2,d2,e2,f2,g2,h2],
 // x7  [a1,b1,c1,d1,e1,f1,g1,h1]]
 
-const concatDeletes = _.curry((matrix, deletes, pieceIndexed) => {
+const concatCaptures = _.curry((matrix, captures, pieceIndexed) => {
   const moves = movesOf(matrix, pieceIndexed.piece, pieceIndexed.coords, false)
   return _.compose(
-    _.concat(deletes),
+    _.concat(captures),
     _.flatten,
-    _.map(_.prop('deletes'))
+    _.map(_.prop('captures'))
   )(moves)
 })
 
@@ -182,9 +182,12 @@ const oponentColor = (color) => color === 'white' ? 'black' : 'white'
 const isInCheck = (matrix, color) => {
   const oponentPieces = M.findByColorIndexed(matrix, oponentColor(color))
   const kingCoords = M.findKingCoords(matrix, color)
-  console.log('kingCoords :', kingCoords)
-  const oponentDeletes = _.reduce(concatDeletes(matrix), [], oponentPieces)
-  return _.any(_.equals(kingCoords), oponentDeletes)
+  const oponentCaptures = _.reduce(concatCaptures(matrix), [], oponentPieces)
+  return _.any(_.equals(kingCoords), oponentCaptures)
+}
+
+const isInCheckmate = (matrix, color) => {
+// TODO:
 }
 
 const kingMoves = (matrix, coords, color, checkForbiddens) => {
@@ -203,8 +206,6 @@ const kingMoves = (matrix, coords, color, checkForbiddens) => {
 
   const appendForbidden = (forbiddens, possible) => {
     const possibleMatrix = M.update(matrix, coords, possible)
-    console.log('possible :', possible)
-    console.log('possibleMatrix :', possibleMatrix)
     if (isInCheck(possibleMatrix, color)) return _.append(possible, forbiddens)
 
     return forbiddens
@@ -218,8 +219,8 @@ const kingMoves = (matrix, coords, color, checkForbiddens) => {
     if (_.any(_.equals(possible), forbiddenCoords)) return moves
 
     const piece = M.get(matrix, possible)
-    if (!piece) return _.append({update: possible, deletes: []}, moves)
-    if (isOponent(piece)) return _.append({update: possible, deletes: [possible]}, moves)
+    if (!piece) return _.append({update: possible, captures: []}, moves)
+    if (isOponent(piece)) return _.append({update: possible, captures: [possible]}, moves)
 
     return moves
   }
@@ -257,14 +258,16 @@ const armyMoves = {
 }
 
 const movesOf = (matrix, piece, coords, checkForbiddens = true) => {
-  return armyMoves[piece.armyType][piece.color][piece.type](matrix, coords, checkForbiddens)
+  const moves = armyMoves[piece.armyType][piece.color][piece.type](matrix, coords, checkForbiddens)
+  // if (checkForbiddens) reject by is in check map({update}, moves)
+  return moves
 }
 
 const toInstructions = _.curry((matrix, origin, move) => {
   const slugAt = _.curry((matrix, coords) => getSlug(M.get(matrix, coords)))
   // TODO: replace with lenses ? meh...
   const update = _.prop('update', move) // TODO: clean code with equational reasoning
-  const deletes = _.prop('deletes', move)
+  const captures = _.prop('captures', move)
 
   return {
     orgin: origin,
@@ -274,7 +277,7 @@ const toInstructions = _.curry((matrix, origin, move) => {
       coords: update,
       slug: slugAt(matrix, origin)
     },
-    deletes: _.unless(_.isEmpty, _.map(slugAt(matrix)))(deletes),
+    captures: _.unless(_.isEmpty, _.map(slugAt(matrix)))(captures),
     matrix: M.applyMove(matrix, move, origin) // calculation of new state ?
   }
 })
@@ -300,5 +303,8 @@ const getPossibleMoves = (matrix, originPosition) => {
 
 module.exports = {
   getMoveInstructions,
-  getPossibleMoves
+  getPossibleMoves,
+  oponentColor,
+  isInCheck,
+  isInCheckmate
 }

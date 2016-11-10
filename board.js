@@ -39,6 +39,18 @@ const setDraggables = _.curry((handler, pieces) => {
   _.forEach(setDraggable(handler), pieces)
 })
 
+const clearDraggables = (matrix) => _.compose(unSetDraggables, M.findAll)(matrix)
+
+const setArmyDraggable = (matrix, color, handler) => _.compose(setDraggables(handler), M.findByColor(color))(matrix)
+
+const setWhiteArmyDraggable = (matrix, handler) => setArmyDraggable(matrix, 'white', handler)
+
+const setBlackArmyDraggable = (matrix, handler) => setArmyDraggable(matrix, 'black', handler)
+
+// const setWhiteArmyDraggable = (matrix, handler) => _.compose(setDraggables(handler), M.findWhites)(matrix)
+//
+// const setBlackArmyDraggable = (matrix, handler) => _.compose(setDraggables(handler), M.findBlacks)(matrix)
+
 // function removePiece (position) {
 //   return getPiece(position).remove()
 // }
@@ -113,14 +125,8 @@ const showPossibleMoves = (possibleMoves) => {
 
 const drawInstructions = (instructions) => {
   updatePiece(instructions.update)
-  _.forEach(deletePiece, instructions.deletes)
+  _.forEach(deletePiece, instructions.captures)
 }
-
-const clearDraggables = (matrix) => _.compose(unSetDraggables, M.findAll)(matrix)
-
-const setWhiteArmyDraggable = (matrix, handler) => _.compose(setDraggables(handler), M.findWhites)(matrix)
-
-const setBlackArmyDraggable = (matrix, handler) => _.compose(setDraggables(handler), M.findBlacks)(matrix)
 
 const setSquaresHandlers = (handlers) => {
   _.forEach((square) => {
@@ -153,5 +159,6 @@ module.exports = {
   setBlackArmyDraggable,
   setSquaresHandlers,
   getSquareEl,
-  clearDraggables
+  clearDraggables,
+  setArmyDraggable
 }
