@@ -131,11 +131,53 @@ const findKingCoords = (matrix, color) => _.compose(
   indexByCoords
 )(matrix)
 
-// const findKingCoords = (matrix, color) => _.compose(
-//   _.prop('coords'),
-//   _.find(_.pathEq(['piece', 'type'], 'king'),
-//   findByColorIndexed(matrix, color)
-// ))()
+// 8 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+// 7 ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
+// 6 … … … … … … … …
+// 5 … … … … … … … …
+// 4 … … … … … … … …
+// 3 … … ♘ … … … … …
+// 2 ♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙
+// 1 ♖ … ♗ ♕ ♔ ♗ ♘ ♖
+//   a b c d e f g h
+
+const toUnicode = piece => {
+  return unicodeChess[piece.color][piece.type]
+}
+
+const unicodeChess = {
+  black: {
+    king: '♚',
+    queen: '♛',
+    rook: '♜',
+    bishop: '♝',
+    knight: '♞',
+    pawn: '♟'
+  },
+  white: {
+    king: '♔',
+    queen: '♕',
+    rook: '♖',
+    bishop: '♗',
+    knight: '♘',
+    pawn: '♙'
+  }
+}
+
+const log = matrix => {
+  let unicodeBoard = ''
+  for (let x = 0; x < matrix.length; x++) {
+    for (let y = 0; y < matrix[x].length; y++) {
+      let piece = matrix[x][y]
+
+      if (piece) unicodeBoard += toUnicode(piece) + ' '
+      else unicodeBoard += '  '
+
+      if (y === matrix[x].length - 1) unicodeBoard += '\n'
+    }
+  }
+  console.log(unicodeBoard)
+}
 
 module.exports = {
   set,
@@ -152,5 +194,6 @@ module.exports = {
   forEachByPosition,
   findAll,
   findByColorIndexed,
-  findKingCoords
+  findKingCoords,
+  log
 }
