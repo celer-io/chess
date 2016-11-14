@@ -177,16 +177,6 @@ const concatCaptures = _.curry((matrix, captures, pieceIndexed) => {
   )(moves)
 })
 
-const concatMatrices = _.curry((matrix, matrices, pieceIndexed) => {
-  const moves = movesOf(matrix, pieceIndexed.piece, pieceIndexed.coords, false)
-  return _.compose(
-    _.concat(matrices),
-    _.map(move => {
-      return M.update(matrix, pieceIndexed.coords, move.update)
-    })
-  )(moves)
-})
-
 const oponentColor = (color) => color === 'white' ? 'black' : 'white'
 
 const isInCheck = _.curry((matrix, color) => {
@@ -196,24 +186,22 @@ const isInCheck = _.curry((matrix, color) => {
   return _.any(_.equals(kingCoords), oponentCaptures)
 })
 
-// const isMat = (matrix, coords) => {
-//
-// }
+const concatMatrices = _.curry((matrix, matrices, pieceIndexed) => {
+  const moves = movesOf(matrix, pieceIndexed.piece, pieceIndexed.coords)
+  return _.compose(
+    _.concat(matrices),
+    _.map(M.applyMove(matrix, _.__, pieceIndexed.coords))
+  )(moves)
+})
 
-const possibleMatrices = (matrix, color) => {
+const canMove = (matrix, color) => {
   const ownPieces = M.findByColorIndexed(matrix, color)
-  return _.reduce(concatMatrices(matrix), [], ownPieces)
+  const possibleMatrices = _.reduce(concatMatrices(matrix), [], ownPieces)
+
+  return possibleMatrices.length > 0
 }
 
-const isInCheckmate = (matrix, color) => {
-  const currenInCheck = isInCheck(matrix, color)
-  const possibleMatricesOut = _.reject(isInCheck(_.__, color), possibleMatrices(matrix, color))
-  console.log('possibleMatricesOut :', possibleMatricesOut)
-  // return  && _.none(!isInCheck(_.__, color), possibleMatrices(matrix, color))
-  return currenInCheck && _.isEmpty(possibleMatricesOut)
-}
-
-const kingMoves = (matrix, coords, color, checkForbiddens) => {
+const kingMoves = (matrix, coords, color) => {
   const transformations = [
     coordsOf(0, 1),
     coordsOf(0, -1),
@@ -227,20 +215,9 @@ const kingMoves = (matrix, coords, color, checkForbiddens) => {
 
   const possibles = possiblesOf(coords)(transformations)
 
-  const appendForbidden = (forbiddens, possible) => {
-    const possibleMatrix = M.update(matrix, coords, possible)
-    if (isInCheck(possibleMatrix, color)) return _.append(possible, forbiddens)
-
-    return forbiddens
-  }
-
-  const forbiddenCoords = checkForbiddens ? _.reduce(appendForbidden, [], possibles) : []
-
   const isOponent = areOponents(M.get(matrix, coords))
 
   const appendMove = (moves, possible) => {
-    if (_.any(_.equals(possible), forbiddenCoords)) return moves
-
     const piece = M.get(matrix, possible)
     if (!piece) return _.append({update: possible, captures: []}, moves)
     if (isOponent(piece)) return _.append({update: possible, captures: [possible]}, moves)
@@ -251,12 +228,23 @@ const kingMoves = (matrix, coords, color, checkForbiddens) => {
   return _.reduce(appendMove, [], possibles)
 }
 
-const whiteKingMoves = (matrix, coords, checkForbiddens) => {
-  return kingMoves(matrix, coords, 'white', checkForbiddens)
+const whiteKingMoves = (matrix, coords) => {
+  return kingMoves(matrix, coords, 'white')
 }
 
-const blackKingMoves = (matrix, coords, checkForbiddens) => {
-  return kingMoves(matrix, coords, 'black', checkForbiddens)
+const blackKingMoves = (matrix, coords) => {
+  return kingMoves(matrix, coords, 'black')
+}
+
+const movesOf = (matrix, piece, coords, recurse = true) => {
+  const moves = armyMoves[piece.armyType][piece.color][piece.type](matrix, coords)
+
+  if (!recurse) return moves
+
+  return _.reject(move => {
+    const possibleMatrix = M.applyMove(matrix, move, coords)
+    return isInCheck(possibleMatrix, piece.color)
+  }, moves)
 }
 
 const armyMoves = {
@@ -278,12 +266,6 @@ const armyMoves = {
       king: blackKingMoves
     }
   }
-}
-
-const movesOf = (matrix, piece, coords, checkForbiddens = true) => {
-  const moves = armyMoves[piece.armyType][piece.color][piece.type](matrix, coords, checkForbiddens)
-  // if (checkForbiddens) reject by is in check map({update}, moves)
-  return moves
 }
 
 const toInstructions = _.curry((matrix, origin, move) => {
@@ -328,6 +310,6 @@ module.exports = {
   getMoveInstructions,
   getPossibleMoves,
   oponentColor,
-  isInCheck,
-  isInCheckmate
+  canMove,
+  isInCheck
 }

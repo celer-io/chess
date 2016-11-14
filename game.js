@@ -28,22 +28,21 @@ const nextState = (game, instructions) => {
   const matrix = _.prop('matrix', instructions)
   let state = _.clone(_.prop('state', game))
 
-  if (_.propEq('name', 'turn', state)) {
+  if (_.any(_.propEq('name', _.__, state), ['turn', 'in_check'])) {
     state = _.set(lensPLayer, oponent, state)
   }
-  if (Rules.isInCheck(matrix, _.view(lensPLayer, state))) {
+  if (Rules.isInCheck(matrix, state.player)) {
     state = _.set(lensName, 'in_check', state)
-    if (Rules.isInCheckmate(matrix, _.view(lensPLayer, state))) {
+    if (!Rules.canMove(matrix, state.player)) {
       state = _.set(lensName, 'in_checkmate', state)
     }
+  } else if (!Rules.canMove(matrix, state.player)) {
+    state = _.set(lensName, 'in_stalemate', state)
+  } else {
+    state = _.set(lensName, 'turn', state)
   }
-  // if (game.state === 'black_turn') {
-  //   if (R.isInCheck(matrix, 'white')) state = black_check
-  //   state = 'white_turn'
-  // }
-  // if (game.state === 'white_turn') {
-  //   state = 'black_turn'
-  // }
+  // TODO: put army possibleMoves (indexed) into state => no need to compute possible moves on drag start
+
   return {
     state,
     matrix

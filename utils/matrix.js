@@ -46,12 +46,12 @@ const transform = _.curry((origin, transformation) => {
   return transformed
 })
 
-const applyMove = (matrix, move, origin) => {
+const applyMove = _.curry((matrix, move, origin) => {
   const destination = _.prop('update', move)
   const captures = _.prop('captures', move)
 
   return update(_.reduce(remove, matrix, captures), origin, destination)
-}
+})
 
 const letterToY = { a: 0, b: 1, c: 2, d: 3, e: 4, f: 5, g: 6, h: 7 }
 
@@ -164,7 +164,7 @@ const unicodeChess = {
   }
 }
 
-const log = matrix => {
+const trace = _.curry((tag, matrix) => {
   let unicodeBoard = ''
   for (let x = 0; x < matrix.length; x++) {
     for (let y = 0; y < matrix[x].length; y++) {
@@ -176,8 +176,9 @@ const log = matrix => {
       if (y === matrix[x].length - 1) unicodeBoard += '\n'
     }
   }
-  console.log(unicodeBoard)
-}
+  console.log(tag + '\n', unicodeBoard)
+  return matrix
+})
 
 module.exports = {
   set,
@@ -195,5 +196,5 @@ module.exports = {
   findAll,
   findByColorIndexed,
   findKingCoords,
-  log
+  trace
 }
