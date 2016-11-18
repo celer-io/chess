@@ -21,20 +21,6 @@ const update = _.curry((matrix, origin, destination) => {
   return remove(set(matrix, destination, get(matrix, origin)), origin)
 })
 
-// const pieceAfterTransform = (matrix, origin, transformation) => {
-//   const transformed = transform(origin, transformation)
-//   if (!transformed) return null
-//
-//   return get(matrix, transformed)
-// }
-
-// const anyPieceAfterTransform = _.curry((matrix, origin, transformation) => {
-//   const piece = pieceAfterTransform(matrix, origin, transformation)
-//   if (!piece) return false
-//
-//   return true
-// })
-
 // TODO: memoize ?
 // applies relative coords(transformation) to origin coords
 const transform = _.curry((origin, transformation) => {
@@ -131,16 +117,6 @@ const findKingCoords = (matrix, color) => _.compose(
   _.find(isKing(color)),
   indexByCoords
 )(matrix)
-
-// 8 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
-// 7 ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
-// 6 … … … … … … … …
-// 5 … … … … … … … …
-// 4 … … … … … … … …
-// 3 … … ♘ … … … … …
-// 2 ♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙
-// 1 ♖ … ♗ ♕ ♔ ♗ ♘ ♖
-//   a b c d e f g h
 
 const toUnicode = piece => {
   return unicodeChess[piece.color][piece.type]

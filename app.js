@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const destination = squareTarget.id
     const instructions = Rules.getMoveInstructions(game, origin, destination)
-    // const instructions = Rules.getInstructions(game, origin, destination)
 
     if (!instructions.error) { // TODO: move into instructions handling
       Board.setMoveTarget(squareTarget)
@@ -34,17 +33,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const onPieceDragStart = ev => {
     Board.clearMoves()
     const position = ev.currentTarget.parentNode.id
-    // console.log('game.possibleMoves :', game.possibleMoves)
     Board.showPossibleMoves(game.possibleMoves, position)
-    // Board.showPossibleMoves(Rules.getPossibleMoves(game.matrix, position))
     Board.setData(ev, position)
     // Board.niceDragImage(ev)
   }
 
   const onSquareDragOver = ev => ev.preventDefault()
-  // const onSquareDragEnter = ev => {
-  //   Board.setMoveTarget(ev.target)
-  // }
 
   const print = (game, instructions) => {
     if (instructions.error) {
@@ -66,12 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Board.setArmyDraggable(game.matrix, state.player, onPieceDragStart)
     } else if (_.propEq('name', 'in_stalemate', state)) {
       console.warn(state.player + ' player is in stalemate !')
-      // Board.setArmyDraggable(game.matrix, state.player, onPieceDragStart)
     }
-    // if (game.state === 'white_turn') {
-    // } else if (game.state === 'black_turn') {
-    //   Board.setBlackArmyDraggable(game.matrix, onPieceDragStart)
-    // }
 
     // TODO: display state on dashboard (and handle animations...)
     // Dashboard.print(game)

@@ -15,10 +15,6 @@ const emptyMatrix = [ // TODO: codegolf !
 ]
 
 const stateOf = _.curry((player, name) => ({player, name}))
-// state: {
-//   player: String, // white|black
-//   name: String  //turn|in_check|in_checkmate|in_stalemate|duel|king_turn|midline...
-// }
 const lensPLayer = _.lensProp('player')
 const lensName = _.lensProp('name')
 const nextState = (game, instructions) => {
@@ -33,7 +29,6 @@ const nextState = (game, instructions) => {
   }
 
   const possibleMoves = Rules.getPossibleMoves(matrix, state.player)
-  // console.log('possibleMoves :', possibleMoves)
 
   if (Rules.isInCheck(matrix, state.player)) {
     state = _.set(lensName, 'in_check', state)

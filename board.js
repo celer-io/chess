@@ -6,11 +6,6 @@ const M = require('./utils/matrix')
 //   return x
 // })
 
-// function setDraggableAt (position) {
-//   getPieceEl(position).setAttribute('draggable', true)
-//   return getPieceEl(position)
-// }
-
 const getSlug = piece => piece.color + piece.type + piece.id
 
 function getPieceEl (piece) {
@@ -46,14 +41,6 @@ const setArmyDraggable = (matrix, color, handler) => _.compose(setDraggables(han
 const setWhiteArmyDraggable = (matrix, handler) => setArmyDraggable(matrix, 'white', handler)
 
 const setBlackArmyDraggable = (matrix, handler) => setArmyDraggable(matrix, 'black', handler)
-
-// const setWhiteArmyDraggable = (matrix, handler) => _.compose(setDraggables(handler), M.findWhites)(matrix)
-//
-// const setBlackArmyDraggable = (matrix, handler) => _.compose(setDraggables(handler), M.findBlacks)(matrix)
-
-// function removePiece (position) {
-//   return getPiece(position).remove()
-// }
 
 function createPieceEl (color, type, id) {
   let piece = document.createElement('div')
@@ -119,19 +106,10 @@ const drawMatrix = matrix => {
 
 const showPossibleMoves = (possibleMoves, position) => {
   const moves = _.reject(move => !_.equals(move.origin, M.coords(position)), possibleMoves)
-
-  // console.log('moves :', moves)
   _.forEach(move => {
-    // console.log('M.position(move.update) :', M.position(move.update))
     setMoveAvailable(document.getElementById(M.position(move.update)))
   }, moves)
 }
-// const showPossibleMoves = (possibleMoves, position) => {
-//   const moves = _.find(move => true, possibleMoves)
-//   // _.forEach(position => {
-//   //   setMoveAvailable(document.getElementById(position))
-//   // }, _.map(_.path(['update', 'position']), possibleMoves))
-// }
 
 const drawInstructions = (instructions) => {
   updatePiece(instructions.update)
@@ -163,7 +141,6 @@ module.exports = {
   updatePiece,
   drawMatrix,
   showPossibleMoves,
-  // getSquareEl,
   drawInstructions,
   setWhiteArmyDraggable,
   setBlackArmyDraggable,
