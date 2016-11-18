@@ -30,10 +30,10 @@ An attempt to build a chess game engine in web technologies that implements the 
 - [X] Implement in check rule
 - [X] Rename captures to capture
 - [X] Add nice matrix log
-- [ ] Compute army possible moves on state change
-- [ ] Implement in checkmate rule
-- [ ] Implement in stalemate rule
-- [ ] Implement 'has won' rule
+- [X] Compute army possible moves on state change
+- [X] Implement in checkmate rule
+- [X] Implement in stalemate rule
+- [ ] Implement midline invasion rule
 - [ ] Handle dueling
 - [ ] Handle end of game
 - [ ] Display game state in a dashboard

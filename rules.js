@@ -30,10 +30,10 @@ const areOponents = _.curry((piece1, piece2) => {
   return (isWhite(piece1) && isBlack(piece2)) || (isWhite(piece2) && isBlack(piece1))
 })
 
-const appendInDirection = _.curry((matrix, isOponent, moves, possible) => {
+const appendInDirection = _.curry((matrix, coords, isOponent, moves, possible) => {
   const piece = M.get(matrix, possible)
-  if (!piece) return _.append({update: possible, captures: []}, moves)
-  if (isOponent(piece)) return _.reduced(_.append({ update: possible, captures: [possible] }, moves))
+  if (!piece) return _.append({origin: coords, update: possible, captures: []}, moves)
+  if (isOponent(piece)) return _.reduced(_.append({origin: coords, update: possible, captures: [possible]}, moves))
 
   return _.reduced(moves)
 })
@@ -74,13 +74,13 @@ const pawnMoves = (matrix, coords, sides, front) => {
 
   const appendSide = (moves, possible) => {
     const piece = M.get(matrix, possible)
-    if (piece && isOponent(piece)) return _.append({update: possible, captures: [possible]}, moves)
+    if (piece && isOponent(piece)) return _.append({origin: coords, update: possible, captures: [possible]}, moves)
 
     return moves
   }
   const appendFront = (moves, possible) => {
     const piece = M.get(matrix, possible)
-    if (!piece) return _.append({update: possible, captures: []}, moves)
+    if (!piece) return _.append({origin: coords, update: possible, captures: []}, moves)
 
     return _.reduced(moves)
   }
@@ -108,8 +108,8 @@ const knightMoves = (matrix, coords) => {
 
   const appendMove = (moves, possible) => {
     const piece = M.get(matrix, possible)
-    if (!piece) return _.append({update: possible, captures: []}, moves)
-    if (isOponent(piece)) return _.append({update: possible, captures: [possible]}, moves)
+    if (!piece) return _.append({origin: coords, update: possible, captures: []}, moves)
+    if (isOponent(piece)) return _.append({origin: coords, update: possible, captures: [possible]}, moves)
 
     return moves
   }
@@ -125,7 +125,7 @@ const rookMoves = (matrix, coords) => {
 
   const isOponent = areOponents(M.get(matrix, coords))
 
-  const appendMove = appendInDirection(matrix, isOponent)
+  const appendMove = appendInDirection(matrix, coords, isOponent)
 
   return _.compose(
     _.reduce(appendMove, _.__, possiblesXup),
@@ -143,7 +143,7 @@ const bishopMoves = (matrix, coords) => {
 
   const isOponent = areOponents(M.get(matrix, coords))
 
-  const appendMove = appendInDirection(matrix, isOponent)
+  const appendMove = appendInDirection(matrix, coords, isOponent)
 
   return _.compose(
     _.reduce(appendMove, _.__, possiblesXYUp),
@@ -157,6 +157,41 @@ const queenMoves = (matrix, coords) => _.concat(
   rookMoves(matrix, coords),
   bishopMoves(matrix, coords)
 )
+
+const kingMoves = (matrix, coords, color) => {
+  const transformations = [
+    coordsOf(0, 1),
+    coordsOf(0, -1),
+    coordsOf(1, 0),
+    coordsOf(-1, 0),
+    coordsOf(1, 1),
+    coordsOf(-1, -1),
+    coordsOf(1, -1),
+    coordsOf(-1, 1)
+  ]
+
+  const possibles = possiblesOf(coords)(transformations)
+
+  const isOponent = areOponents(M.get(matrix, coords))
+
+  const appendMove = (moves, possible) => {
+    const piece = M.get(matrix, possible)
+    if (!piece) return _.append({origin: coords, update: possible, captures: []}, moves)
+    if (isOponent(piece)) return _.append({origin: coords, update: possible, captures: [possible]}, moves)
+
+    return moves
+  }
+
+  return _.reduce(appendMove, [], possibles)
+}
+
+const whiteKingMoves = (matrix, coords) => {
+  return kingMoves(matrix, coords, 'white')
+}
+
+const blackKingMoves = (matrix, coords) => {
+  return kingMoves(matrix, coords, 'black')
+}
 
 //      y0 y1 y2 y3 y4 y5 y6 y7
 // x0 [[a8,b8,c8,d8,e8,f8,g8,h8],
@@ -201,41 +236,6 @@ const canMove = (matrix, color) => {
   return possibleMatrices.length > 0
 }
 
-const kingMoves = (matrix, coords, color) => {
-  const transformations = [
-    coordsOf(0, 1),
-    coordsOf(0, -1),
-    coordsOf(1, 0),
-    coordsOf(-1, 0),
-    coordsOf(1, 1),
-    coordsOf(-1, -1),
-    coordsOf(1, -1),
-    coordsOf(-1, 1)
-  ]
-
-  const possibles = possiblesOf(coords)(transformations)
-
-  const isOponent = areOponents(M.get(matrix, coords))
-
-  const appendMove = (moves, possible) => {
-    const piece = M.get(matrix, possible)
-    if (!piece) return _.append({update: possible, captures: []}, moves)
-    if (isOponent(piece)) return _.append({update: possible, captures: [possible]}, moves)
-
-    return moves
-  }
-
-  return _.reduce(appendMove, [], possibles)
-}
-
-const whiteKingMoves = (matrix, coords) => {
-  return kingMoves(matrix, coords, 'white')
-}
-
-const blackKingMoves = (matrix, coords) => {
-  return kingMoves(matrix, coords, 'black')
-}
-
 const movesOf = (matrix, piece, coords, recurse = true) => {
   const moves = armyMoves[piece.armyType][piece.color][piece.type](matrix, coords)
 
@@ -268,48 +268,89 @@ const armyMoves = {
   }
 }
 
-const toInstructions = _.curry((matrix, origin, move) => {
-  const slugAt = _.curry((matrix, coords) => getSlug(M.get(matrix, coords)))
-  // TODO: replace with lenses ? meh...
-  const update = _.prop('update', move) // TODO: clean code with equational reasoning
+const slugAt = _.curry((matrix, coords) => getSlug(M.get(matrix, coords)))
+
+const toInstructions = _.curry((matrix, move) => {
+  const update = _.prop('update', move)
   const captures = _.prop('captures', move)
 
   return {
-    orgin: origin,
+    orgin: move.origin,
     animation: null,
     update: {
       position: M.position(update),
       coords: update,
-      slug: slugAt(matrix, origin)
+      slug: slugAt(matrix, move.origin)
     },
     captures: _.unless(_.isEmpty, _.map(slugAt(matrix)))(captures),
-    matrix: M.applyMove(matrix, move, origin) // calculation of new state ?
+    matrix: M.applyMove(matrix, move)
   }
 })
 
-const getMoveInstructions = (matrix, originPosition, target) => {
-  const origin = M.coords(originPosition)
+const getMoveInstructions = (game, source, target) => {
+  const origin = M.coords(source)
   const destination = M.coords(target)
-  const piece = M.get(matrix, origin)
-  const moves = movesOf(matrix, piece, origin)
+  // const moves = _.find(m => {
+  //   return _.and(_.propEq('update', destination), _.propEq('update', destination))
+  // }, game.possibleMoves)
   // TODO: change _.prop('update') to someting more appropriate when possible move will not (only) be defined by update
-  const move = _.find(_.propEq('update', destination), moves)
+  const move = _.find(m => {
+    // console.log('origin :', origin)
+    // console.log('destination :', destination)
+    // console.log('m.origin :', m.origin)
+    // console.log('m.update :', m.update)
+    // console.log('_.equals(origin, m.origin) && _.equals(destination, m.update) :', _.equals(origin, m.origin) && _.equals(destination, m.update))
+    return _.equals(origin, m.origin) && _.equals(destination, m.update)
+  }, game.possibleMoves)
+  // console.log('move :', move)
 
   if (!move) return { error: 'no-can-move' }
-  return toInstructions(matrix, origin, move)
+  return toInstructions(game.matrix, move)
 }
 
-const getPossibleMoves = (matrix, originPosition) => {
-  const origin = M.coords(originPosition)
-  const piece = M.get(matrix, origin)
-  const moves = movesOf(matrix, piece, origin)
-  return _.map(toInstructions(matrix, origin), moves)
-}
+// const getPossibleMoves = (matrix, originPosition) => {
+//   const origin = M.coords(originPosition)
+//   const piece = M.get(matrix, origin)
+//   const moves = movesOf(matrix, piece, origin)
+//   return _.map(toInstructions(matrix, origin), moves)
+// }
+
+// const concatMatrices = _.curry((matrix, matrices, pieceIndexed) => {
+//   const moves = movesOf(matrix, pieceIndexed.piece, pieceIndexed.coords)
+//   return _.compose(
+//     _.concat(matrices),
+//     _.map(M.applyMove(matrix, _.__, pieceIndexed.coords))
+//   )(moves)
+// })
+
+// const canMove = (matrix, color) => {
+//   const ownPieces = M.findByColorIndexed(matrix, color)
+//   const possibleMatrices = _.reduce(concatMatrices(matrix), [], ownPieces)
+//
+//   return possibleMatrices.length > 0
+// }
+
+// const getPossibleMovesAt = (matrix, originPosition) => {
+//   const origin = M.coords(originPosition)
+//   const piece = M.get(matrix, origin)
+//   const moves = movesOf(matrix, piece, origin)
+//   return _.map(toInstructions(matrix, origin), moves)
+// }
+
+const getPossibleMoves = (matrix, color) => _.compose(_.reject(m => _.isEmpty(m.coords)), _.flatten, _.map(p => movesOf(matrix, p.piece, p.coords)), M.findByColorIndexed(matrix))(color)
+// const getPossibleMoves = (matrix, color) => _.reject(m => _.isEmpty(m.coords), _.map(p => movesOf(matrix, p.piece, p.coords), M.findByColorIndexed(matrix, color)))
+
+// const getPossibleMoves = (matrix, color) => {
+//   const ownPieces = M.findByColorIndexed(matrix, color)
+//   const moves = _.map(p => movesOf(matrix, p.piece, p.coords), ownPieces)
+//   return _.reject(m => _.isEmpty(m.coords), moves)
+// }
 
 module.exports = {
   getMoveInstructions,
   getPossibleMoves,
   oponentColor,
   canMove,
-  isInCheck
+  isInCheck // ,
+  // getPossibleMovesAt
 }

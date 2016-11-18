@@ -46,9 +46,10 @@ const transform = _.curry((origin, transformation) => {
   return transformed
 })
 
-const applyMove = _.curry((matrix, move, origin) => {
+const applyMove = _.curry((matrix, move) => {
   const destination = _.prop('update', move)
   const captures = _.prop('captures', move)
+  const origin = _.prop('origin', move)
 
   return update(_.reduce(remove, matrix, captures), origin, destination)
 })

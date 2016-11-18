@@ -31,21 +31,25 @@ const nextState = (game, instructions) => {
   if (_.any(_.propEq('name', _.__, state), ['turn', 'in_check'])) {
     state = _.set(lensPLayer, oponent, state)
   }
+
+  const possibleMoves = Rules.getPossibleMoves(matrix, state.player)
+  // console.log('possibleMoves :', possibleMoves)
+
   if (Rules.isInCheck(matrix, state.player)) {
     state = _.set(lensName, 'in_check', state)
-    if (!Rules.canMove(matrix, state.player)) {
+    if (!possibleMoves.length) {
       state = _.set(lensName, 'in_checkmate', state)
     }
-  } else if (!Rules.canMove(matrix, state.player)) {
+  } else if (!possibleMoves.length) {
     state = _.set(lensName, 'in_stalemate', state)
   } else {
     state = _.set(lensName, 'turn', state)
   }
-  // TODO: put army possibleMoves (indexed) into state => no need to compute possible moves on drag start
 
   return {
     state,
-    matrix
+    matrix,
+    possibleMoves
   }
 }
 
@@ -91,9 +95,12 @@ const of = (blackArmyType, whiteArmyType) => {
     return M.set(matrix, M.coords(piece.position), _.omit(['position'], piece))
   }
 
+  const matrix = _.reduce(appendPiece, emptyMatrix, initialSet)
+
   return {
     state: stateOf('white', 'turn'),
-    matrix: _.reduce(appendPiece, emptyMatrix, initialSet)
+    matrix,
+    possibleMoves: Rules.getPossibleMoves(matrix, 'white')
   }
 }
 

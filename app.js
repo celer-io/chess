@@ -20,7 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
     Board.clearAvailableMoves()
 
     const destination = squareTarget.id
-    const instructions = Rules.getMoveInstructions(game.matrix, origin, destination)
+    const instructions = Rules.getMoveInstructions(game, origin, destination)
+    // const instructions = Rules.getInstructions(game, origin, destination)
 
     if (!instructions.error) { // TODO: move into instructions handling
       Board.setMoveTarget(squareTarget)
@@ -33,7 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const onPieceDragStart = ev => {
     Board.clearMoves()
     const position = ev.currentTarget.parentNode.id
-    Board.showPossibleMoves(Rules.getPossibleMoves(game.matrix, position))
+    // console.log('game.possibleMoves :', game.possibleMoves)
+    Board.showPossibleMoves(game.possibleMoves, position)
+    // Board.showPossibleMoves(Rules.getPossibleMoves(game.matrix, position))
     Board.setData(ev, position)
     // Board.niceDragImage(ev)
   }
@@ -50,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     Board.drawInstructions(instructions)
 
-    // Board.clearDraggables(game.matrix) // XXX : commented for development
+    Board.clearDraggables(game.matrix)
     const state = _.prop('state', game)
 
     if (_.propEq('name', 'turn', state)) {

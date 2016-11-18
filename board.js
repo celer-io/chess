@@ -117,11 +117,21 @@ const drawMatrix = matrix => {
   M.forEachByPosition(drawPiece, matrix)
 }
 
-const showPossibleMoves = (possibleMoves) => {
-  _.forEach(position => {
-    setMoveAvailable(document.getElementById(position))
-  }, _.map(_.path(['update', 'position']), possibleMoves))
+const showPossibleMoves = (possibleMoves, position) => {
+  const moves = _.reject(move => !_.equals(move.origin, M.coords(position)), possibleMoves)
+
+  // console.log('moves :', moves)
+  _.forEach(move => {
+    // console.log('M.position(move.update) :', M.position(move.update))
+    setMoveAvailable(document.getElementById(M.position(move.update)))
+  }, moves)
 }
+// const showPossibleMoves = (possibleMoves, position) => {
+//   const moves = _.find(move => true, possibleMoves)
+//   // _.forEach(position => {
+//   //   setMoveAvailable(document.getElementById(position))
+//   // }, _.map(_.path(['update', 'position']), possibleMoves))
+// }
 
 const drawInstructions = (instructions) => {
   updatePiece(instructions.update)
