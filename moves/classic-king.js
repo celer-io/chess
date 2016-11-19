@@ -2,22 +2,11 @@
 const _ = require('ramda')
 const M = require('../utils/matrix')
 
-const coordsOf = require('./utils').coordsOf
 const possiblesOf = require('./utils').possiblesOf
 const areOponents = require('./utils').areOponents
+const transformations = require('./utils').kingTransformations
 
 module.exports = (matrix, coords, color) => {
-  const transformations = [
-    coordsOf(0, 1),
-    coordsOf(0, -1),
-    coordsOf(1, 0),
-    coordsOf(-1, 0),
-    coordsOf(1, 1),
-    coordsOf(-1, -1),
-    coordsOf(1, -1),
-    coordsOf(-1, 1)
-  ]
-
   const possibles = possiblesOf(coords)(transformations)
 
   const isOponent = areOponents(M.get(matrix, coords))

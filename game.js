@@ -20,8 +20,6 @@ const stateOf = _.curry((player, name) => ({player, name}))
 //   name: String  //turn|in_check|duel|king_turn\won_by_stalemate|won_by_checkmate|won_by_midline...
 // }
 
-// const lensPLayer = _.lensProp('player')
-// const lensName = _.lensProp('name')
 const nextState = (game, instructions) => {
   if (_.prop('error', instructions)) return game
 
@@ -58,14 +56,14 @@ const of = (blackArmyType, whiteArmyType) => {
     {type: 'bishop', id: '2', color: 'white', armyType: 'classic', position: 'f1'},
     {type: 'knight', id: '1', color: 'white', armyType: 'classic', position: 'b1'},
     {type: 'knight', id: '2', color: 'white', armyType: 'classic', position: 'g1'},
-    {type: 'pawn', id: '1', color: 'white', armyType: 'classic', position: 'a2'},
-    {type: 'pawn', id: '2', color: 'white', armyType: 'classic', position: 'b2'},
-    {type: 'pawn', id: '3', color: 'white', armyType: 'classic', position: 'c2'},
-    {type: 'pawn', id: '4', color: 'white', armyType: 'classic', position: 'd2'},
-    {type: 'pawn', id: '5', color: 'white', armyType: 'classic', position: 'e2'},
-    {type: 'pawn', id: '6', color: 'white', armyType: 'classic', position: 'f2'},
-    {type: 'pawn', id: '7', color: 'white', armyType: 'classic', position: 'g2'},
-    {type: 'pawn', id: '8', color: 'white', armyType: 'classic', position: 'h2'},
+    {type: 'pawn', id: '1', color: 'white', armyType: 'nemesis', position: 'a2'},
+    {type: 'pawn', id: '2', color: 'white', armyType: 'nemesis', position: 'b2'},
+    {type: 'pawn', id: '3', color: 'white', armyType: 'nemesis', position: 'c2'},
+    {type: 'pawn', id: '4', color: 'white', armyType: 'nemesis', position: 'd2'},
+    {type: 'pawn', id: '5', color: 'white', armyType: 'nemesis', position: 'e2'},
+    {type: 'pawn', id: '6', color: 'white', armyType: 'nemesis', position: 'f2'},
+    {type: 'pawn', id: '7', color: 'white', armyType: 'nemesis', position: 'g2'},
+    {type: 'pawn', id: '8', color: 'white', armyType: 'nemesis', position: 'h2'},
 
     {type: 'king', id: '', color: 'black', armyType: 'classic', position: 'e8'},
     {type: 'queen', id: '', color: 'black', armyType: 'classic', position: 'd8'},
@@ -75,14 +73,14 @@ const of = (blackArmyType, whiteArmyType) => {
     {type: 'bishop', id: '2', color: 'black', armyType: 'classic', position: 'f8'},
     {type: 'knight', id: '1', color: 'black', armyType: 'classic', position: 'b8'},
     {type: 'knight', id: '2', color: 'black', armyType: 'classic', position: 'g8'},
-    {type: 'pawn', id: '1', color: 'black', armyType: 'classic', position: 'a7'},
-    {type: 'pawn', id: '2', color: 'black', armyType: 'classic', position: 'b7'},
-    {type: 'pawn', id: '3', color: 'black', armyType: 'classic', position: 'c7'},
-    {type: 'pawn', id: '4', color: 'black', armyType: 'classic', position: 'd7'},
-    {type: 'pawn', id: '5', color: 'black', armyType: 'classic', position: 'e7'},
-    {type: 'pawn', id: '6', color: 'black', armyType: 'classic', position: 'f7'},
-    {type: 'pawn', id: '7', color: 'black', armyType: 'classic', position: 'g7'},
-    {type: 'pawn', id: '8', color: 'black', armyType: 'classic', position: 'h7'}
+    {type: 'pawn', id: '1', color: 'black', armyType: 'nemesis', position: 'a7'},
+    {type: 'pawn', id: '2', color: 'black', armyType: 'nemesis', position: 'b7'},
+    {type: 'pawn', id: '3', color: 'black', armyType: 'nemesis', position: 'c7'},
+    {type: 'pawn', id: '4', color: 'black', armyType: 'nemesis', position: 'd7'},
+    {type: 'pawn', id: '5', color: 'black', armyType: 'nemesis', position: 'e7'},
+    {type: 'pawn', id: '6', color: 'black', armyType: 'nemesis', position: 'f7'},
+    {type: 'pawn', id: '7', color: 'black', armyType: 'nemesis', position: 'g7'},
+    {type: 'pawn', id: '8', color: 'black', armyType: 'nemesis', position: 'h7'}
   ]
 
   const appendPiece = (matrix, piece) => {

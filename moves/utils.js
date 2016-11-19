@@ -41,6 +41,17 @@ const toDiag = (xs, ys) => {
   return _.times(idx => coordsOf(xs[idx], ys[idx]), xs.length)
 }
 
+const kingTransformations = [
+  coordsOf(0, 1),
+  coordsOf(0, -1),
+  coordsOf(1, 0),
+  coordsOf(-1, 0),
+  coordsOf(1, 1),
+  coordsOf(-1, -1),
+  coordsOf(1, -1),
+  coordsOf(-1, 1)
+]
+
 module.exports = {
   coordsOf,
   possiblesOf,
@@ -50,5 +61,6 @@ module.exports = {
   appendInDirection,
   toDiag,
   coordsOfX,
-  coordsOfY
+  coordsOfY,
+  kingTransformations
 }
