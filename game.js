@@ -15,34 +15,33 @@ const emptyMatrix = [ // TODO: codegolf !
 ]
 
 const stateOf = _.curry((player, name) => ({player, name}))
-const lensPLayer = _.lensProp('player')
-const lensName = _.lensProp('name')
+// state: {
+//   player: String, // white|black
+//   name: String  //turn|in_check|duel|king_turn\won_by_stalemate|won_by_checkmate|won_by_midline...
+// }
+
+// const lensPLayer = _.lensProp('player')
+// const lensName = _.lensProp('name')
 const nextState = (game, instructions) => {
   if (_.prop('error', instructions)) return game
 
-  const oponent = Rules.oponentColor(_.path(['state', 'player'], game))
+  const player = _.path(['state', 'player'], game)
+  const oponent = Rules.oponentColor(player)
   const matrix = _.prop('matrix', instructions)
-  let state = _.clone(_.prop('state', game))
 
-  if (_.any(_.propEq('name', _.__, state), ['turn', 'in_check'])) {
-    state = _.set(lensPLayer, oponent, state)
-  }
+  if (Rules.isMidlineInvasion(matrix, player)) return { state: stateOf(player, 'won_by_midline'), matrix }
 
-  const possibleMoves = Rules.getPossibleMoves(matrix, state.player)
+  const possibleMoves = Rules.getPossibleMoves(matrix, oponent)
+  const isInCheck = Rules.isInCheck(matrix, oponent)
 
-  if (Rules.isInCheck(matrix, state.player)) {
-    state = _.set(lensName, 'in_check', state)
-    if (!possibleMoves.length) {
-      state = _.set(lensName, 'in_checkmate', state)
-    }
-  } else if (!possibleMoves.length) {
-    state = _.set(lensName, 'in_stalemate', state)
-  } else {
-    state = _.set(lensName, 'turn', state)
-  }
+  if (!possibleMoves.length && isInCheck) return { state: stateOf(player, 'won_by_checkmate'), matrix }
+  if (!possibleMoves.length && !isInCheck) return { state: stateOf(player, 'won_by_stalemate'), matrix }
 
   return {
-    state,
+    state: {
+      player: oponent,
+      name: isInCheck ? 'in_check' : 'turn'
+    },
     matrix,
     possibleMoves
   }

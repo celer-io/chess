@@ -33,7 +33,7 @@ An attempt to build a chess game engine in web technologies that implements the 
 - [X] Compute army possible moves on state change
 - [X] Implement in checkmate rule
 - [X] Implement in stalemate rule
-- [ ] Implement midline invasion rule
+- [X] Implement midline invasion rule
 - [ ] Handle dueling
 - [ ] Handle end of game
 - [ ] Display game state in a dashboard

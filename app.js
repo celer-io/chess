@@ -53,13 +53,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (_.propEq('name', 'turn', state)) {
       Board.setArmyDraggable(game.matrix, state.player, onPieceDragStart)
     } else if (_.propEq('name', 'in_check', state)) {
-      console.warn(state.player + ' player is in check !')
+      console.warn(state.player + ' player is in check')
       Board.setArmyDraggable(game.matrix, state.player, onPieceDragStart)
-    } else if (_.propEq('name', 'in_checkmate', state)) {
-      console.warn(state.player + ' player is in checkmate !')
-      // Board.setArmyDraggable(game.matrix, state.player, onPieceDragStart)
-    } else if (_.propEq('name', 'in_stalemate', state)) {
-      console.warn(state.player + ' player is in stalemate !')
+    } else if (_.propEq('name', 'won_by_checkmate', state)) {
+      console.warn(state.player + ' player won by checkmate')
+    } else if (_.propEq('name', 'won_by_stalemate', state)) {
+      console.warn(state.player + ' player won by stalemate')
+    } else if (_.propEq('name', 'won_by_midline', state)) {
+      console.warn(state.player + ' player won by midline invasion')
     }
 
     // TODO: display state on dashboard (and handle animations...)
