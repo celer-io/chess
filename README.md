@@ -37,8 +37,9 @@ An attempt to build a chess game engine in web technologies that implements the 
 - [ ] Handle dueling
 - [ ] Handle end of game
 - [ ] Display game state in a dashboard
-- [ ] Implement Nemesis rules
+- [X] Implement Nemesis rules
 - [ ] Implement Two king rules
 - [ ] Implement Jungle rules
 - [ ] Implement Empowered rules
 - [ ] Implement Reaper rules
+- [ ] Add ui for game start and army selection

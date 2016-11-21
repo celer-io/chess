@@ -48,14 +48,14 @@ const nextState = (game, instructions) => {
 const of = (blackArmyType, whiteArmyType) => {
   // TODO: use coords for position
   const initialSet = [
-    {type: 'king', id: '', color: 'white', armyType: 'classic', position: 'e1'},
-    {type: 'queen', id: '', color: 'white', armyType: 'classic', position: 'd1'},
-    {type: 'rook', id: '1', color: 'white', armyType: 'classic', position: 'a1'},
-    {type: 'rook', id: '2', color: 'white', armyType: 'classic', position: 'h1'},
-    {type: 'bishop', id: '1', color: 'white', armyType: 'classic', position: 'c1'},
-    {type: 'bishop', id: '2', color: 'white', armyType: 'classic', position: 'f1'},
-    {type: 'knight', id: '1', color: 'white', armyType: 'classic', position: 'b1'},
-    {type: 'knight', id: '2', color: 'white', armyType: 'classic', position: 'g1'},
+    {type: 'king', id: '', color: 'white', armyType: 'nemesis', position: 'e1'},
+    {type: 'queen', id: '', color: 'white', armyType: 'nemesis', position: 'd1'},
+    {type: 'rook', id: '1', color: 'white', armyType: 'nemesis', position: 'a1'},
+    {type: 'rook', id: '2', color: 'white', armyType: 'nemesis', position: 'h1'},
+    {type: 'bishop', id: '1', color: 'white', armyType: 'nemesis', position: 'c1'},
+    {type: 'bishop', id: '2', color: 'white', armyType: 'nemesis', position: 'f1'},
+    {type: 'knight', id: '1', color: 'white', armyType: 'nemesis', position: 'b1'},
+    {type: 'knight', id: '2', color: 'white', armyType: 'nemesis', position: 'g1'},
     {type: 'pawn', id: '1', color: 'white', armyType: 'nemesis', position: 'a2'},
     {type: 'pawn', id: '2', color: 'white', armyType: 'nemesis', position: 'b2'},
     {type: 'pawn', id: '3', color: 'white', armyType: 'nemesis', position: 'c2'},
@@ -73,14 +73,14 @@ const of = (blackArmyType, whiteArmyType) => {
     {type: 'bishop', id: '2', color: 'black', armyType: 'classic', position: 'f8'},
     {type: 'knight', id: '1', color: 'black', armyType: 'classic', position: 'b8'},
     {type: 'knight', id: '2', color: 'black', armyType: 'classic', position: 'g8'},
-    {type: 'pawn', id: '1', color: 'black', armyType: 'nemesis', position: 'a7'},
-    {type: 'pawn', id: '2', color: 'black', armyType: 'nemesis', position: 'b7'},
-    {type: 'pawn', id: '3', color: 'black', armyType: 'nemesis', position: 'c7'},
-    {type: 'pawn', id: '4', color: 'black', armyType: 'nemesis', position: 'd7'},
-    {type: 'pawn', id: '5', color: 'black', armyType: 'nemesis', position: 'e7'},
-    {type: 'pawn', id: '6', color: 'black', armyType: 'nemesis', position: 'f7'},
-    {type: 'pawn', id: '7', color: 'black', armyType: 'nemesis', position: 'g7'},
-    {type: 'pawn', id: '8', color: 'black', armyType: 'nemesis', position: 'h7'}
+    {type: 'pawn', id: '1', color: 'black', armyType: 'classic', position: 'a7'},
+    {type: 'pawn', id: '2', color: 'black', armyType: 'classic', position: 'b7'},
+    {type: 'pawn', id: '3', color: 'black', armyType: 'classic', position: 'c7'},
+    {type: 'pawn', id: '4', color: 'black', armyType: 'classic', position: 'd7'},
+    {type: 'pawn', id: '5', color: 'black', armyType: 'classic', position: 'e7'},
+    {type: 'pawn', id: '6', color: 'black', armyType: 'classic', position: 'f7'},
+    {type: 'pawn', id: '7', color: 'black', armyType: 'classic', position: 'g7'},
+    {type: 'pawn', id: '8', color: 'black', armyType: 'classic', position: 'h7'}
   ]
 
   const appendPiece = (matrix, piece) => {

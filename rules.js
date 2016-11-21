@@ -42,7 +42,7 @@ const armyMoves = {
       knight: require('./moves/classic-knight'),
       rook: require('./moves/classic-rook'),
       bishop: require('./moves/classic-bishop'),
-      queen: require('./moves/classic-queen'),
+      queen: require('./moves/nemesis-queen'),
       king: require('./moves/classic-king')
     },
     black: {
@@ -50,7 +50,7 @@ const armyMoves = {
       knight: require('./moves/classic-knight'),
       rook: require('./moves/classic-rook'),
       bishop: require('./moves/classic-bishop'),
-      queen: require('./moves/classic-queen'),
+      queen: require('./moves/nemesis-queen'),
       king: require('./moves/classic-king')
     }
   }
@@ -75,7 +75,13 @@ const isInCheck = _.curry((matrix, color) => {
 })
 
 const movesOf = (matrix, piece, coords, recurse = true) => {
-  const moves = armyMoves[piece.armyType][piece.color][piece.type](matrix, coords)
+  const moves = _.reject(move => {
+    return _.any(capture => {
+      const capturePiece = M.get(matrix, capture)
+      return piece.type !== 'king' && capturePiece.armyType === 'nemesis' && capturePiece.type === 'queen'
+    }, move.captures)
+    // TODO: also remove moves that captures a nemesis-queen... and or reaper-rook or animals-rook...
+  }, armyMoves[piece.armyType][piece.color][piece.type](matrix, coords))
 
   if (!recurse) return moves
 
