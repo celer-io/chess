@@ -2,17 +2,32 @@
 const _ = require('ramda')
 const M = require('../utils/matrix')
 
+const coordsOf = require('./utils').coordsOf
 const possiblesOf = require('./utils').possiblesOf
 const areOponents = require('./utils').areOponents
 const transformations = require('./utils').kingTransformations
 
+const sides = (color) => {
+  if (color === 'white') return [coordsOf(-1, -1), coordsOf(-1, 1)]
+  else return [coordsOf(1, 1), coordsOf(1, -1)]
+}
+
+const front = (color, x) => {
+  if (color === 'white') return [coordsOf(-1, 0)]
+  else return [coordsOf(1, 0)]
+}
+
+const oponentColor = (color) => color === 'white' ? 'black' : 'white'
+
 // TODO: Handle en passant and elevation...
-module.exports = (matrix, coords, sides, front, kingCoords) => {
-  const possiblesSides = possiblesOf(coords)(sides)
-  const possiblesFront = possiblesOf(coords)(front)
+module.exports = (matrix, coords) => {
+  const piece = M.get(matrix, coords)
+  const possiblesSides = possiblesOf(coords)(sides(piece.color))
+  const possiblesFront = possiblesOf(coords)(front(piece.color, coords.x))
+  const kingCoords = M.findKingCoords(matrix, oponentColor(piece.color))
   const possiblesNemesis = possiblesOf(coords)(transformations)
 
-  const isOponent = areOponents(M.get(matrix, coords))
+  const isOponent = areOponents(piece)
 
   const appendSide = (moves, possible) => {
     const piece = M.get(matrix, possible)

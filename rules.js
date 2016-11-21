@@ -19,40 +19,20 @@ const M = require('./utils/matrix')
 
 const armyMoves = {
   classic: {
-    white: {
-      pawn: require('./moves/classic-pawn-white'),
-      knight: require('./moves/classic-knight'),
-      rook: require('./moves/classic-rook'),
-      bishop: require('./moves/classic-bishop'),
-      queen: require('./moves/classic-queen'),
-      king: require('./moves/classic-king')
-    },
-    black: {
-      pawn: require('./moves/classic-pawn-black'),
-      knight: require('./moves/classic-knight'),
-      rook: require('./moves/classic-rook'),
-      bishop: require('./moves/classic-bishop'),
-      queen: require('./moves/classic-queen'),
-      king: require('./moves/classic-king')
-    }
+    pawn: require('./moves/classic-pawn'),
+    knight: require('./moves/classic-knight'),
+    rook: require('./moves/classic-rook'),
+    bishop: require('./moves/classic-bishop'),
+    queen: require('./moves/classic-queen'),
+    king: require('./moves/classic-king')
   },
   nemesis: {
-    white: {
-      pawn: require('./moves/nemesis-pawn-white'),
-      knight: require('./moves/classic-knight'),
-      rook: require('./moves/classic-rook'),
-      bishop: require('./moves/classic-bishop'),
-      queen: require('./moves/nemesis-queen'),
-      king: require('./moves/classic-king')
-    },
-    black: {
-      pawn: require('./moves/nemesis-pawn-black'),
-      knight: require('./moves/classic-knight'),
-      rook: require('./moves/classic-rook'),
-      bishop: require('./moves/classic-bishop'),
-      queen: require('./moves/nemesis-queen'),
-      king: require('./moves/classic-king')
-    }
+    pawn: require('./moves/nemesis-pawn'),
+    knight: require('./moves/classic-knight'),
+    rook: require('./moves/classic-rook'),
+    bishop: require('./moves/classic-bishop'),
+    queen: require('./moves/nemesis-queen'),
+    king: require('./moves/classic-king')
   }
 }
 
@@ -81,7 +61,7 @@ const movesOf = (matrix, piece, coords, recurse = true) => {
       return piece.type !== 'king' && capturePiece.armyType === 'nemesis' && capturePiece.type === 'queen'
     }, move.captures)
     // TODO: also remove moves that captures a nemesis-queen... and or reaper-rook or animals-rook...
-  }, armyMoves[piece.armyType][piece.color][piece.type](matrix, coords))
+  }, armyMoves[piece.armyType][piece.type](matrix, coords))
 
   if (!recurse) return moves
 
