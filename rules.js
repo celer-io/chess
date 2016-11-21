@@ -33,6 +33,14 @@ const armyMoves = {
     bishop: require('./moves/classic-bishop'),
     queen: require('./moves/nemesis-queen'),
     king: require('./moves/classic-king')
+  },
+  empowered: {
+    pawn: require('./moves/classic-pawn'),
+    knight: require('./moves/empowered-knight'),
+    rook: require('./moves/empowered-rook'),
+    bishop: require('./moves/empowered-bishop'),
+    queen: require('./moves/classic-king'),
+    king: require('./moves/classic-king')
   }
 }
 
