@@ -41,5 +41,5 @@ An attempt to build a chess game engine in web technologies that implements the 
 - [ ] Implement Two king rules
 - [ ] Implement Jungle rules
 - [X] Implement Empowered rules
-- [ ] Implement Reaper rules
+- [X] Implement Reaper rules
 - [ ] Add ui for game start and army selection

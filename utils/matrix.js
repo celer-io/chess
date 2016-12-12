@@ -105,6 +105,14 @@ const indexByCoords = (matrix) => {
   return ret
 }
 
+const findOpenSquares = (matrix) => {
+  let ret = []
+  forEach((piece, coords) => {
+    if (!piece) ret = _.append(coords, ret)
+  }, matrix)
+  return ret
+}
+
 const isKing = _.curry((color, pieceIndexed) => _.whereEq({ type: 'king', color }, _.prop('piece', pieceIndexed)))
 
 // const trace = _.curry((tag, x) => {
@@ -173,5 +181,6 @@ module.exports = {
   findAll,
   findByColorIndexed,
   findKingCoords,
-  trace
+  trace,
+  findOpenSquares
 }

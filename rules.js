@@ -41,6 +41,14 @@ const armyMoves = {
     bishop: require('./moves/empowered-bishop'),
     queen: require('./moves/classic-king'),
     king: require('./moves/classic-king')
+  },
+  reaper: {
+    pawn: require('./moves/classic-pawn'),
+    knight: require('./moves/classic-knight'),
+    rook: require('./moves/reaper-rook'),
+    bishop: require('./moves/classic-bishop'),
+    queen: require('./moves/reaper-queen'),
+    king: require('./moves/classic-king')
   }
 }
 
@@ -66,9 +74,10 @@ const movesOf = (matrix, piece, coords, recurse = true) => {
   const moves = _.reject(move => {
     return _.any(capture => {
       const capturePiece = M.get(matrix, capture)
-      return piece.type !== 'king' && capturePiece.armyType === 'nemesis' && capturePiece.type === 'queen'
+      return piece.type !== 'king' && capturePiece.armyType === 'nemesis' && capturePiece.type === 'queen' ||
+      capturePiece.armyType === 'reaper' && capturePiece.type === 'rook'
     }, move.captures)
-    // TODO: also remove moves that captures a nemesis-queen... and or reaper-rook or animals-rook...
+    // TODO: also remove moves that captures an animals-rook...
   }, armyMoves[piece.armyType][piece.type](matrix, coords))
 
   if (!recurse) return moves
