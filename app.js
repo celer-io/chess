@@ -53,8 +53,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (_.propEq('name', 'turn', state)) {
       Board.setArmyDraggable(game.matrix, state.player, onPieceDragStart)
     } else if (_.propEq('name', 'in_check', state)) {
-      console.warn(state.player + ' player is in check')
       Board.setArmyDraggable(game.matrix, state.player, onPieceDragStart)
+    }
+
+    if (_.propEq('name', 'in_check', state)) {
+      console.warn(state.player + ' player is in check')
     } else if (_.propEq('name', 'won_by_checkmate', state)) {
       console.warn(state.player + ' player won by checkmate')
     } else if (_.propEq('name', 'won_by_stalemate', state)) {

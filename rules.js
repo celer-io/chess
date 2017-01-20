@@ -2,11 +2,6 @@
 const _ = require('ramda')
 const M = require('./utils/matrix')
 
-// const trace = _.curry((tag, x) => {
-//   console.log(tag, x)
-//   return x
-// })
-
 //      y0 y1 y2 y3 y4 y5 y6 y7
 // x0 [[a8,b8,c8,d8,e8,f8,g8,h8],
 // x1  [a7,b7,c7,d7,e7,f7,g7,h7],

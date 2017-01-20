@@ -8,8 +8,19 @@ const bishopMoves = require('./classic-bishop')
 const rookMoves = require('./classic-rook')
 const knightMoves = require('./classic-knight')
 
+// TODO: move into utils
+const isBishop = _.propEq('type', 'bishop')
+// TODO: move into utils
+const isKnight = _.propEq('type', 'knight')
+
+const trace = _.curry((tag, x) => {
+  console.log(tag, x)
+  return x
+})
+
 module.exports = (matrix, coords) => {
   const piece = M.get(matrix, coords)
+  // TODO: move into utils
   const adjacents = [
     coordsOf(1, 0),
     coordsOf(-1, 0),
@@ -17,12 +28,24 @@ module.exports = (matrix, coords) => {
     coordsOf(0, -1)
   ]
 
-  const adjacentPieces = _.compose(_.filter(_.propEq('color', piece.color)), _.reject(_.isNil), _.map(M.get(matrix)), possiblesOf(coords))(adjacents)
+  // const isEmpoweredBy = (type) => {
+  //
+  // }
+
+  // TODO: move into utils
+  const adjacentPieces = _.compose(_.filter(_.propEq('color', piece.color)), _.reject(_.isNil), _.map(M.get(matrix)), possiblesOf(coords))(adjacents) // to much nil checking ! => use functionale nullable and monads...
+
+  // return _.compose(
+  //   trace('whenKnightAdjacent'),
+  //   _.when(_.any(isKnight, adjacentPieces), _.concat(knightMoves(matrix, coords))),
+  //   trace('whenBishopAdjacent'),
+  //   _.when(_.any(isBishop, adjacentPieces), _.concat(bishopMoves(matrix, coords)))
+  // )(rookMoves(matrix, coords))
 
   // TODO: refactor to remove mutation
   let ret = rookMoves(matrix, coords)
-  if (_.any(_.propEq('type', 'bishop'), adjacentPieces)) ret = _.concat(ret, bishopMoves(matrix, coords))
-  if (_.any(_.propEq('type', 'knight'), adjacentPieces)) ret = _.concat(ret, knightMoves(matrix, coords))
+  if (_.any(isBishop, adjacentPieces)) ret = _.concat(ret, bishopMoves(matrix, coords))
+  if (_.any(isKnight, adjacentPieces)) ret = _.concat(ret, knightMoves(matrix, coords))
 
   return ret
 }
