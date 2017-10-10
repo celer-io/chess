@@ -1,0 +1,67 @@
+.clearfix {
+  clear: both; }
+
+#board {
+  max-width: 512px;
+  margin: 0 auto; }
+  #board .square {
+    float: left;
+    max-height: 64px;
+    max-width: 64px;
+    width: 12.5%;
+    padding-bottom: 12.5%;
+    box-sizing: border-box;
+    position: relative; }
+    #board .square:nth-of-type(odd) {
+      background-color: #d9d9d9; }
+      #board .square:nth-of-type(odd).move-source {
+        background-color: #b3ccff; }
+      #board .square:nth-of-type(odd).move-available {
+        background-color: #c1ffd5; }
+      #board .square:nth-of-type(odd).move-target {
+        background-color: #b3ccff; }
+    #board .square:nth-of-type(even) {
+      background-color: #a6a6a6; }
+      #board .square:nth-of-type(even).move-source {
+        background-color: #80d4ff; }
+      #board .square:nth-of-type(even).move-available {
+        background-color: #9fdfbf; }
+      #board .square:nth-of-type(even).move-target {
+        background-color: #80d4ff; }
+  #board .piece {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    font-size: 3em;
+    position: absolute;
+    top: 50%;
+    line-height: 0;
+    cursor: default; }
+    #board .piece[draggable="true"] {
+      cursor: grab; }
+    #board .piece.white-king::before {
+      content: "\2654"; }
+    #board .piece.white-queen::before {
+      content: "\2655"; }
+    #board .piece.white-rook::before {
+      content: "\2656"; }
+    #board .piece.white-bishop::before {
+      content: "\2657"; }
+    #board .piece.white-knight::before {
+      content: "\2658"; }
+    #board .piece.white-pawn::before {
+      content: "\2659"; }
+    #board .piece.black-king::before {
+      content: "\265A"; }
+    #board .piece.black-queen::before {
+      content: "\265B"; }
+    #board .piece.black-rook::before {
+      content: "\265C"; }
+    #board .piece.black-bishop::before {
+      content: "\265D"; }
+    #board .piece.black-knight::before {
+      content: "\265E"; }
+    #board .piece.black-pawn::before {
+      content: "\265F"; }
+
+/*# sourceMappingURL=style.css.map */
