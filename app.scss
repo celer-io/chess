@@ -10,10 +10,17 @@ $lightgreen: #c1ffd5;
 }
 
 #board {
+	max-width:512px;
+	margin: 0 auto;
+
 	.square {
 		float: left;
-		width: 50px;
-		height: 50px;
+		max-height: 64px;
+		max-width: 64px;
+		width:12.5%;
+		padding-bottom:12.5%;
+		box-sizing: border-box;
+		position: relative;
 
 		&:nth-of-type(odd) {
 			background-color: $lightgrey;
@@ -31,12 +38,13 @@ $lightgreen: #c1ffd5;
 	}
 
 	.piece {
-		width: 50px;
-		height: 50px;
 		display: flex;
 		justify-content: center;
-		align-items: center;
-		font-size: 2.5em;
+		width: 100%;
+		font-size: 3em;
+		position: absolute;
+		top: 50%;
+		line-height: 0;
 		cursor: default;
 
 		&[draggable="true"] {
