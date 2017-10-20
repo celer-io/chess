@@ -13,11 +13,6 @@ const isBishop = _.propEq('type', 'bishop')
 // TODO: move into utils
 const isKnight = _.propEq('type', 'knight')
 
-const trace = _.curry((tag, x) => {
-  console.log(tag, x)
-  return x
-})
-
 module.exports = (matrix, coords) => {
   const piece = M.get(matrix, coords)
   // TODO: move into utils

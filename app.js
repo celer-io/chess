@@ -11,78 +11,72 @@ const _ = require('ramda')
 // })
 
 document.addEventListener('DOMContentLoaded', () => {
-  let game = Game.of('classic', 'classic') // Variables lives freely into the game ui loop :)
+  document.getElementById('startButton').onclick = () => {
+    const onSquareDrop = ev => {
+      ev.preventDefault()
+      const origin = Board.getData(ev)
+      const squareTarget = ev.target.classList.contains('piece') ? ev.target.parentNode : ev.target
+      Board.clearAvailableMoves()
 
-  const onSquareDrop = ev => {
-    ev.preventDefault()
-    const origin = Board.getData(ev)
-    const squareTarget = ev.target.classList.contains('piece') ? ev.target.parentNode : ev.target
-    Board.clearAvailableMoves()
+      const destination = squareTarget.id
+      const instructions = Rules.getMoveInstructions(game, origin, destination)
 
-    const destination = squareTarget.id
-    const instructions = Rules.getMoveInstructions(game, origin, destination)
-
-    if (!instructions.error) { // TODO: move into instructions handling
-      Board.setMoveTarget(squareTarget)
-      Board.setMoveSource(Board.getSquareEl(origin))
+      applyInstructions(instructions)
     }
+    const applyInstructions = (instructions) => {
+      game = Game.nextState(game, instructions)
+      // print(game, instructions)
+      if (instructions.error) {
+        return console.warn(instructions.error)
+      }
 
-    handleInstructions(instructions)
-  }
+      Board.drawInstructions(instructions)
 
-  const onPieceDragStart = ev => {
-    Board.clearMoves()
-    const position = ev.currentTarget.parentNode.id
-    Board.showPossibleMoves(game.possibleMoves, position)
-    Board.setData(ev, position)
-    // Board.niceDragImage(ev)
-  }
+      Board.clearDraggables(game.matrix)
+      const state = _.prop('state', game)
 
-  const onSquareDragOver = ev => ev.preventDefault()
+      if (_.propEq('name', 'turn', state)) {
+        Board.setArmyDraggable(game.matrix, state.player, onPieceDragStart)
+      } else if (_.propEq('name', 'in_check', state)) {
+        Board.setArmyDraggable(game.matrix, state.player, onPieceDragStart)
+      }
 
-  const print = (game, instructions) => {
-    if (instructions.error) {
-      return console.warn(instructions.error)
+      if (_.propEq('name', 'in_check', state)) {
+        console.warn(state.player + ' player is in check')
+      } else if (_.propEq('name', 'won_by_checkmate', state)) {
+        console.warn(state.player + ' player won by checkmate')
+      } else if (_.propEq('name', 'won_by_stalemate', state)) {
+        console.warn(state.player + ' player won by stalemate')
+      } else if (_.propEq('name', 'won_by_midline', state)) {
+        console.warn(state.player + ' player won by midline invasion')
+      }
+
+      // TODO: display state on dashboard (and handle animations...)
+      // Dashboard.print(game)
     }
-
-    Board.drawInstructions(instructions)
-
-    Board.clearDraggables(game.matrix)
-    const state = _.prop('state', game)
-
-    if (_.propEq('name', 'turn', state)) {
-      Board.setArmyDraggable(game.matrix, state.player, onPieceDragStart)
-    } else if (_.propEq('name', 'in_check', state)) {
-      Board.setArmyDraggable(game.matrix, state.player, onPieceDragStart)
+    const onPieceDragStart = ev => {
+      Board.clearMoves()
+      const position = ev.currentTarget.parentNode.id
+      Board.showPossibleMoves(game.possibleMoves, position)
+      Board.setData(ev, position)
+      // Board.niceDragImage(ev)
     }
+    const onSquareDragOver = ev => ev.preventDefault()
 
-    if (_.propEq('name', 'in_check', state)) {
-      console.warn(state.player + ' player is in check')
-    } else if (_.propEq('name', 'won_by_checkmate', state)) {
-      console.warn(state.player + ' player won by checkmate')
-    } else if (_.propEq('name', 'won_by_stalemate', state)) {
-      console.warn(state.player + ' player won by stalemate')
-    } else if (_.propEq('name', 'won_by_midline', state)) {
-      console.warn(state.player + ' player won by midline invasion')
-    }
+    const onSquareDragLeave = ev => Board.unSetMoveTarget(ev.target)
+    let whiteArmyType = document.getElementById('whiteArmyType').value
+    let blackArmyType = document.getElementById('blackArmyType').value
 
-    // TODO: display state on dashboard (and handle animations...)
-    // Dashboard.print(game)
+    let game = Game.of(whiteArmyType, blackArmyType)
+    Board.drawMatrix(game.matrix)
+    document.getElementById('dashboard').style.display = 'none'
+    document.getElementById('board').style.display = 'block'
+
+    Board.setWhiteArmyDraggable(game.matrix, onPieceDragStart)
+    Board.setSquaresHandlers({
+      onSquareDragOver,
+      onSquareDragLeave,
+      onSquareDrop
+    })
   }
-
-  const handleInstructions = instructions => {
-    game = Game.nextState(game, instructions)
-    print(game, instructions)
-  }
-
-  const onSquareDragLeave = ev => Board.unSetMoveTarget(ev.target)
-
-  Board.drawMatrix(game.matrix)
-
-  Board.setWhiteArmyDraggable(game.matrix, onPieceDragStart)
-  Board.setSquaresHandlers({
-    onSquareDragOver,
-    onSquareDragLeave,
-    onSquareDrop
-  })
 })

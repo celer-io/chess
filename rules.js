@@ -91,7 +91,7 @@ const toInstructions = _.curry((matrix, move) => {
   const captures = _.prop('captures', move)
 
   return {
-    orgin: move.origin,
+    origin: move.origin,
     animation: null,
     update: {
       position: M.position(update),

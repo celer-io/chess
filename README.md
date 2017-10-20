@@ -42,4 +42,4 @@ An attempt to build a chess game engine in web technologies that implements the 
 - [ ] Implement Jungle rules
 - [X] Implement Empowered rules
 - [X] Implement Reaper rules
-- [ ] Add ui for game start and army selection
+- [X] Add ui for game start and army selection

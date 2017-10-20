@@ -112,6 +112,9 @@ const showPossibleMoves = (possibleMoves, position) => {
 }
 
 const drawInstructions = (instructions) => {
+  setMoveTarget(getSquareEl(instructions.update.position))
+  setMoveSource(getSquareEl(M.position(instructions.origin)))
+
   updatePiece(instructions.update)
   _.forEach(deletePiece, instructions.captures)
 }
